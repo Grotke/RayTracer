@@ -1,6 +1,7 @@
 #include <iostream>
 #include <algorithm>
 #include <vector>
+#include <stack>
 
 #include "FreeImage.h"
 #include <glm/glm.hpp>
@@ -20,6 +21,22 @@
 			FreeImage reads the colors differently depending on the endianness of the system. My system is apparently little? endian and FreeImage
 			is expecting a big? endian system (or vice versa). So instead of entering colors as rgb I go by bgr.
 */
+
+glm::mat4 translate(float x, float y, float z) {
+	return glm::mat4(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, x, y, z, 1.0f);
+}
+
+glm::mat4 scale(float x, float y, float z) {
+	return glm::mat4(x, 0.0f, 0.0f, 0.0f, 0.0f, y, 0.0f, 0.0f, 0.0f, 0.0f, z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+}
+
+glm::mat4 rotate(float x, float y, float z, float angleInDegrees) {
+	float angleInRadians = glm::radians(angleInDegrees);
+	float cosA = glm::cos(angleInRadians);
+	float sinA = glm::sin(angleInRadians);
+	return glm::mat4(cosA + (1.0f - cosA)*x*x, (1.0f - cosA)*x*y + sinA * z, (1.0f - cosA)*x*z - sinA * y, 0.0f, (1.0f - cosA)*x*y - sinA * z, cosA + (1.0f - cosA)*y*y, (1.0f - cosA)*y*z + sinA * x, 0.0f, (1.0f - cosA)*x*z + sinA * y, (1.0f - cosA)*y*z - sinA * x, cosA + (1.0f - cosA)*z*z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+}
+
 struct Color {
 	int r, g, b;
 	Color(int r, int g, int b): r(r), g(g), b(b) {}
@@ -32,6 +49,7 @@ struct Shape {
 	const glm::vec3 center;
 	float radius;
 	const Color color;
+	glm::mat4 transform;
 	Shape(glm::vec3 center, float radius, const Color& color) : center(center), radius(radius), isTriangle(false), color(color) {}
 	Shape(const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& v3, const Color& color) : v1(v1), v2(v2), v3(v3), isTriangle(true), color(color) {}
 };
@@ -58,23 +76,29 @@ float intersectTriangle(const Camera::Ray& ray, const Shape& tri) {
 	return -1.0f;
 }
 
-float intersectSphere(const Camera::Ray& ray, const Shape& object) {
+float intersectSphere(const Camera::Ray& rawRay, const Shape& object) {
+	Camera::Ray ray(glm::inverse(object.transform) * glm::vec4(rawRay.origin, 1.0f), glm::inverse(object.transform) * glm::vec4(rawRay.dir, 0.0f));
 	float a = glm::dot(ray.dir, ray.dir);
 	float b = 2 * glm::dot(ray.dir, (ray.origin - object.center));
 	float c = glm::dot((ray.origin - object.center), (ray.origin - object.center)) - glm::pow(object.radius, 2);
 	float discrim = calculateDiscriminant(a, b, c);
-
 	if (discrim < 0) {
 		return -1.0f;
 	}
 	float x1 = (-b + glm::sqrt(discrim)) / 2 * a;
 	float x2 = (-b - glm::sqrt(discrim)) / 2 * a;
+	float t;
 	if (x1 >= 0.0f && x2 >= 0.0f) {
 		//Get smallest positive number
-		return std::min(x1, x2);
+		t = std::min(x1, x2);
 	}
-	//One is negative so return the maximum number which should be positive
-	return std::max(x1, x2);
+	else {
+		//One is negative so return the maximum number which should be positive
+		t = std::max(x1, x2);
+	}
+	glm::vec3 transfPoint = ray.origin + ray.dir * t;
+	glm::vec3 finalPoint = object.transform * glm::vec4(transfPoint, 1.0f);
+	return glm::distance(finalPoint, rawRay.origin);
 }
 
 float intersect(const Camera::Ray& ray, const Shape& object) {
@@ -182,7 +206,8 @@ int main(int argc, char* argv[]) {
 		DONE	Build object intersection for sphere
 		DONE	Build object interesction for triangle
 		DONE	Adapt for multiple objects and depth testing
-			Transformations
+		DONE	Transformations
+			Normals and transformed normals (inverse transpose)
 			Implement Lighting
 			Implement file reading
 	*/
@@ -192,8 +217,8 @@ int main(int argc, char* argv[]) {
 	Color backgroundColor = Color(0, 0, 0);
 	Color pixelColor;
 
-	std::vector<Shape*> objects = getTestSceneObjects(1);
-	Camera cam = getTestSceneCamera(1, 1);
+	std::vector<Shape*> objects = getTestSceneObjects(-1);
+	Camera cam = getTestSceneCamera(-1, -1);
 	
 	for (int i = 0; i < h; i++) {
 		for (int j = 0; j < w; j++) {
