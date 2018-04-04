@@ -5,6 +5,7 @@ class Camera
 {
 public:
 	Camera(const glm::vec3& lookFrom, const glm::vec3& lookAt, const glm::vec3& up, float fovy);
+	Camera();
 	~Camera();
 
 	struct Ray {

@@ -10,6 +10,7 @@ Camera::Camera(const glm::vec3& lookFrom, const glm::vec3& lookAt, const glm::ve
 	forward = lookAt - lookFrom;
 }
 
+Camera::Camera(){}
 
 Camera::~Camera()
 {

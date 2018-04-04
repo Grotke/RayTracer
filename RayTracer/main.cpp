@@ -9,7 +9,8 @@
 
 #include "Renderer.h"
 #include "Camera.h"
-
+#include "SceneObjects.hpp"
+#include "Scene.h"
 
 /*
 	Problems Encountered
@@ -21,38 +22,6 @@
 			FreeImage reads the colors differently depending on the endianness of the system. My system is apparently little? endian and FreeImage
 			is expecting a big? endian system (or vice versa). So instead of entering colors as rgb I go by bgr.
 */
-
-glm::mat4 translate(float x, float y, float z) {
-	return glm::mat4(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, x, y, z, 1.0f);
-}
-
-glm::mat4 scale(float x, float y, float z) {
-	return glm::mat4(x, 0.0f, 0.0f, 0.0f, 0.0f, y, 0.0f, 0.0f, 0.0f, 0.0f, z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-}
-
-glm::mat4 rotate(float x, float y, float z, float angleInDegrees) {
-	float angleInRadians = glm::radians(angleInDegrees);
-	float cosA = glm::cos(angleInRadians);
-	float sinA = glm::sin(angleInRadians);
-	return glm::mat4(cosA + (1.0f - cosA)*x*x, (1.0f - cosA)*x*y + sinA * z, (1.0f - cosA)*x*z - sinA * y, 0.0f, (1.0f - cosA)*x*y - sinA * z, cosA + (1.0f - cosA)*y*y, (1.0f - cosA)*y*z + sinA * x, 0.0f, (1.0f - cosA)*x*z + sinA * y, (1.0f - cosA)*y*z - sinA * x, cosA + (1.0f - cosA)*z*z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-}
-
-struct Color {
-	int r, g, b;
-	Color(int r, int g, int b): r(r), g(g), b(b) {}
-	Color() {}
-};
-
-struct Shape {
-	bool isTriangle;
-	const glm::vec3 v1, v2, v3;
-	const glm::vec3 center;
-	float radius;
-	const Color color;
-	glm::mat4 transform;
-	Shape(glm::vec3 center, float radius, const Color& color) : center(center), radius(radius), isTriangle(false), color(color) {}
-	Shape(const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& v3, const Color& color) : v1(v1), v2(v2), v3(v3), isTriangle(true), color(color) {}
-};
 
 float calculateDiscriminant(float a, float b, float c) {
 	return glm::pow(b, 2) - (4 * a*c);
@@ -131,17 +100,17 @@ std::vector<Shape*>& getTestSceneObjects(int scene) {
 			glm::vec3 v1(1, -1, 0);
 			glm::vec3 v2(1, 1, 0);
 			glm::vec3 v3(-1, 1, 0);
-			Shape* tri1 = new Shape(v0, v1, v2, Color(0xFF, 0x00, 0x00));
-			Shape* tri2 = new Shape(v0, v2, v3, Color(0xFF, 0x00, 0x00));
+			Shape* tri1 = new Shape(v0, v1, v2, Material(Color(0xFF, 0x00, 0x00)));
+			Shape* tri2 = new Shape(v0, v2, v3, Material(Color(0xFF, 0x00, 0x00)));
 			outObjects->push_back(tri1);
 			outObjects->push_back(tri2);
 			break;
 		}
 		default: {
-			Shape* sphere1 = new Shape(glm::vec3(0, 0, -10), 1.0f, Color(0x5c, 0x42, 0xf4));
-			Shape* sphere2 = new Shape(glm::vec3(1, 0, -7), 1.0f, Color(0xff, 0x42, 0xf4));
-			Shape* tri1 = new Shape(glm::vec3(-1, 0, -4), glm::vec3(0, 1, -4), glm::vec3(1, 0, -4), Color(0xFF, 0xFF, 0xFF));
-			Shape* tri2 = new Shape(glm::vec3(0, 2, -3), glm::vec3(0, 3, -3), glm::vec3(1, 2, -3), Color(0x00, 0xFF, 0xFF));
+			Shape* sphere1 = new Shape(glm::vec3(0, 0, -10), 1.0f, Material(Color(0x5c, 0x42, 0xf4)));
+			Shape* sphere2 = new Shape(glm::vec3(1, 0, -7), 1.0f, Material(Color(0xff, 0x42, 0xf4)));
+			Shape* tri1 = new Shape(glm::vec3(-1, 0, -4), glm::vec3(0, 1, -4), glm::vec3(1, 0, -4), Material(Color(0xFF, 0xFF, 0xFF)));
+			Shape* tri2 = new Shape(glm::vec3(0, 2, -3), glm::vec3(0, 3, -3), glm::vec3(1, 2, -3), Material(Color(0x00, 0xFF, 0xFF)));
 			outObjects->push_back(sphere1);
 			outObjects->push_back(sphere2);
 			outObjects->push_back(tri1);
@@ -211,14 +180,16 @@ int main(int argc, char* argv[]) {
 			Implement Lighting
 			Implement file reading
 	*/
-	const unsigned int w = 640;
-	const unsigned int h = 480;
-	BYTE pixels[w*h * 3];
+	Scene scene("test_scenes/scene3.test");
+	unsigned int w = scene.getWidth();
+	unsigned int h = scene.getHeight();
+
+	std::vector<BYTE> pixels(w*h * 3);
 	Color backgroundColor = Color(0, 0, 0);
 	Color pixelColor;
 
-	std::vector<Shape*> objects = getTestSceneObjects(-1);
-	Camera cam = getTestSceneCamera(-1, -1);
+	std::vector<Shape*> objects = scene.getSceneObjects();
+	Camera cam = scene.getCamera();
 	
 	for (int i = 0; i < h; i++) {
 		for (int j = 0; j < w; j++) {
@@ -228,7 +199,8 @@ int main(int argc, char* argv[]) {
 				pixelColor = backgroundColor;
 			}
 			else {
-				pixelColor = objects[closestIndex]->color;
+				pixelColor = objects[closestIndex]->material.ambient;
+				//objects[closestIndex]->material.diffuse
 			}
 			
 			pixels[i*w * 3 + j * 3] = pixelColor.b;
@@ -238,7 +210,8 @@ int main(int argc, char* argv[]) {
 	}
 
 	Renderer render(w, h);
-	render.createImage(pixels, "test.png");
+	BYTE * outPixels = &pixels[0];
+	render.createImage(outPixels, scene.getOutputFileName());
 	std::cin.get();
 	return 0;
 }
