@@ -37,7 +37,7 @@ Scene::Scene(const std::string& fileName){
 						std::cerr << "Reached Maximum Number of Lights " << numUsed << " Will ignore further lights\n";
 					}
 					else {
-						isValidInput = readvals(s, 6, values); // Position/color for lts.
+						isValidInput = readvals(s, 6, values);
 						if (isValidInput) {
 							lights.push_back(Light(glm::vec4(values[0], values[1], values[2], 0.0f), Color(values[3], values[4], values[5])));
 							numUsed++;
@@ -49,7 +49,7 @@ Scene::Scene(const std::string& fileName){
 						std::cerr << "Reached Maximum Number of Lights " << numUsed << " Will ignore further lights\n";
 					}
 					else {
-						isValidInput = readvals(s, 6, values); // Position/color for lts.
+						isValidInput = readvals(s, 6, values);
 						if (isValidInput) {
 							lights.push_back(Light(glm::vec4(values[0], values[1], values[2], 1.0f), Color(values[3], values[4], values[5])));
 							numUsed++;
@@ -57,14 +57,14 @@ Scene::Scene(const std::string& fileName){
 					}
 				}
 				else if (cmd == "attenuation") {
-					isValidInput = readvals(s, 3, values); // Position/color for lts.
+					isValidInput = readvals(s, 3, values);
 					if (isValidInput) {
 						attenuation = glm::vec3(values[0], values[1], values[2]);
 					}
 				}
 
 				else if (cmd == "maxverts") {
-					isValidInput = readvals(s, 1, values); // Position/color for lts.
+					isValidInput = readvals(s, 1, values);
 					if (isValidInput) {
 						numVerts = (int)values[0];
 						verts = new glm::vec3[numVerts];
@@ -72,21 +72,21 @@ Scene::Scene(const std::string& fileName){
 				}
 
 				else if (cmd == "maxvertnorms") {
-					isValidInput = readvals(s, 1, values); // Position/color for lts.
+					isValidInput = readvals(s, 1, values);
 					if (isValidInput) {
 						numVertNorms = (int)values[0]*2;
 						vertNorms = new glm::vec3[numVertNorms];
 					}
 				}
 				else if (cmd == "vertex") {
-					isValidInput = readvals(s, 3, values); // Position/color for lts.
+					isValidInput = readvals(s, 3, values);
 					if (isValidInput) {
 						verts[vertIndex] = glm::vec3(values[0], values[1], values[2]);
 						vertIndex++;
 					}
 				}
 				else if (cmd == "vertexnormal") {
-					isValidInput = readvals(s, 6, values); // Position/color for lts.
+					isValidInput = readvals(s, 6, values);
 					if (isValidInput) {
 						vertNorms[vertNormIndex] = glm::vec3(values[0], values[1], values[2]);
 						vertNormIndex++;
@@ -94,15 +94,8 @@ Scene::Scene(const std::string& fileName){
 						vertNormIndex++;
 					}
 				}
-
-				// Material Commands 
-				// Ambient, diffuse, specular, shininess properties for each object.
-				// Filling this in is pretty straightforward, so I've left it in 
-				// the skeleton, also as a hint of how to do the more complex ones.
-				// Note that no transforms/stacks are applied to the colors. 
-
 				else if (cmd == "ambient") {
-					isValidInput = readvals(s, 3, values); // colors 
+					isValidInput = readvals(s, 3, values);
 					if (isValidInput) {
 						ambient = Color((float)values[0], (float)values[1], (float)values[2]);
 					}
@@ -151,13 +144,13 @@ Scene::Scene(const std::string& fileName){
 					}
 				}
 				else if (cmd == "camera") {
-					isValidInput = readvals(s, 10, values); // 10 values eye cen up fov
+					isValidInput = readvals(s, 10, values);
 					if (isValidInput) {
 						cam = Camera(glm::vec3(values[0], values[1], values[2]), glm::vec3(values[3], values[4], values[5]), glm::vec3(values[6], values[7], values[8]), values[9]);
 					}
 				}
 				else if (cmd == "sphere" || cmd == "tri" || cmd == "trinormal") {
-					if (numObjects == maxObjects) { // No more objects 
+					if (numObjects == maxObjects) {
 						std::cerr << "Reached Maximum Number of Objects " << numObjects << " Will ignore further objects\n";
 					}
 					else {
@@ -202,19 +195,19 @@ Scene::Scene(const std::string& fileName){
 				else if (cmd == "translate") {
 					isValidInput = readvals(s, 3, values);
 					if (isValidInput) {
-						transfstack.top() = Transform::translate(values[0], values[1], values[2])*transfstack.top();
+						transfstack.top() = transfstack.top()*Transform::translate(values[0], values[1], values[2]);
 					}
 				}
 				else if (cmd == "scale") {
 					isValidInput = readvals(s, 3, values);
 					if (isValidInput) {
-						transfstack.top() = Transform::scale(values[0], values[1], values[2])*transfstack.top();
+						transfstack.top() = transfstack.top()*Transform::scale(values[0], values[1], values[2]);
 					}
 				}
 				else if (cmd == "rotate") {
 					isValidInput = readvals(s, 4, values);
 					if (isValidInput) {
-						transfstack.top() = Transform::rotate(values[0], values[1], values[2], values[3])*transfstack.top();
+						transfstack.top() = transfstack.top() * Transform::rotate(values[0], values[1], values[2], values[3]);
 					}
 				}
 				else if (cmd == "pushTransform") {
@@ -246,8 +239,6 @@ Scene::~Scene()
 {
 }
 
-// Function to read the input data values
-// Use is optional, but should be very helpful in parsing.  
 bool Scene::readvals(std::stringstream &s, int numvals, float* values)
 {
 	for (int i = 0; i < numvals; i++) {

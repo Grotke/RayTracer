@@ -2,13 +2,18 @@
 #include <glm/glm.hpp>
 struct Color {
 	int r, g, b;
-	Color(int r, int g, int b) : r(r), g(g), b(b) {}
-	Color(float inR, float inG, float inB) {
-		r = inR * 255;
-		g = inG * 255;
-		b = inB * 255;
+	int min = 0, max = 255;
+	Color(int inR, int inG, int inB) {
+		r = glm::clamp(inR, min, max);
+		g = glm::clamp(inG, min, max);
+		b = glm::clamp(inB, min, max);
 	}
-	Color() {}
+	Color(float inR, float inG, float inB) {
+		r = glm::clamp((int)(inR * 255), min, max);
+		g = glm::clamp((int)(inG * 255), min, max);
+		b = glm::clamp((int)(inB * 255), min, max);
+	}
+	Color(): r(0), g(0), b(0) {}
 	Color operator+(const Color& other) const
 	{
 		return Color(r + other.r , g + other.g , b + other.b);
@@ -40,6 +45,11 @@ struct Shape {
 		n1 = inverseTranspose * glm::vec4(n1, 0.0f);
 		n2 = inverseTranspose * glm::vec4(n2, 0.0f);
 		n3 = inverseTranspose * glm::vec4(n3, 0.0f);
+	}
+	void print() {
+		std::cout << "vertex #1 x: " << v1.x << " y: " << v1.y << " z: " << v1.z << std::endl;
+		std::cout << "vertex #2 x: " << v2.x << " y: " << v2.y << " z: " << v2.z << std::endl;
+		std::cout << "vertex #3 x: " << v3.x << " y: " << v3.y << " z: " << v3.z << std::endl;
 	}
 	Shape(glm::vec3 center, float radius, const Material& mat) : center(center), radius(radius), isTriangle(false), material(mat) {}
 	Shape(const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& v3, const Material& mat) : v1(v1), v2(v2), v3(v3), isTriangle(true), material(mat) {}

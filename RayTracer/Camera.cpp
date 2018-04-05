@@ -5,7 +5,7 @@
 #include <iostream>
 
 
-Camera::Camera(const glm::vec3& lookFrom, const glm::vec3& lookAt, const glm::vec3& up, float fovy) : lookFrom(lookFrom), lookAt(lookAt), up(up), fovy(fovy)
+Camera::Camera(const glm::vec3& lookFrom, const glm::vec3& lookAt, const glm::vec3& up, float fovy) : lookFrom(lookFrom), lookAt(lookAt), up(glm::normalize(up)), fovy(fovy)
 {
 	forward = lookAt - lookFrom;
 }
@@ -26,3 +26,5 @@ Camera::Ray Camera::createRay(float i, float j, int width, int height) {
 
 	return Ray(lookFrom, rayDir);
 }
+
+

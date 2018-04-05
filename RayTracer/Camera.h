@@ -1,5 +1,6 @@
 #pragma once
 #include <glm/vec3.hpp>
+#include <iostream>
 
 class Camera
 {
@@ -22,5 +23,6 @@ private:
 	glm::vec3 lookAt;
 	glm::vec3 up;
 	glm::vec3 forward;
+	friend std::ostream& operator<<(std::ostream &strm, const Camera &cam);
 };
 

@@ -23,30 +23,43 @@
 			is expecting a big? endian system (or vice versa). So instead of entering colors as rgb I go by bgr.
 */
 
+std::ostream& operator<<(std::ostream &strm, const glm::vec3 &v1) {
+	return strm << "Vector(x: " << v1.x << " y: " << v1.y << " z: " << v1.z << ")";
+}
+
+std::ostream& operator<<(std::ostream &strm, const Camera &cam) {
+	return strm << "Camera(lookAt: " << cam.lookAt << " lookFrom: " << cam.lookFrom << " up: " << cam.up << " forward: " << cam.forward << " fov: " << cam.fovy << ")";
+}
+
 float calculateDiscriminant(float a, float b, float c) {
 	return glm::pow(b, 2) - (4 * a*c);
 }
 
 float intersectTriangle(const Camera::Ray& ray, const Shape& tri) {
-	glm::vec3 planeNormal = glm::normalize(glm::cross(tri.v2 - tri.v1, tri.v3 - tri.v1));
-	if (!glm::epsilonEqual(glm::dot(ray.dir, planeNormal), 0.0f, 0.1f)) {
-		float distAlongRay = (glm::dot(tri.v1, planeNormal) - glm::dot(ray.origin, planeNormal)) / glm::dot(ray.dir, planeNormal);
-		glm::vec3 P = ray.origin + ray.dir*distAlongRay;
-		glm::vec3 A = tri.v1;
-		glm::vec3 C = tri.v2;
-		glm::vec3 B = tri.v3;
-		bool b0 = (glm::dot(glm::vec2(P.x - A.x, P.y - A.y), glm::vec2(A.y - B.y, B.x - A.x)) > 0);
-		bool b1 = (glm::dot(glm::vec2(P.x - B.x, P.y - B.y), glm::vec2(B.y - C.y, C.x - B.x)) > 0);
-		bool b2 = (glm::dot(glm::vec2(P.x - C.x, P.y - C.y), glm::vec2(C.y - A.y, A.x - C.x)) > 0);
-		if (b0 == b1 && b1 == b2) {
-			return distAlongRay;
+	glm::vec3 e1 = tri.v3 - tri.v2;
+	glm::vec3 e2 = tri.v1 - tri.v3;
+	glm::vec3 e3 = tri.v2 - tri.v1;
+	glm::vec3 planeNormal = glm::cross(e1, e2);
+	if (!glm::epsilonEqual(glm::dot(ray.dir, planeNormal), 0.0f, 0.01f)) {
+		float d = glm::dot(tri.v1, planeNormal);
+		float t = (d - glm::dot(ray.origin, planeNormal)) / glm::dot(ray.dir, planeNormal);
+		glm::vec3 P = ray.origin + t*ray.dir;
+		glm::vec3 d1 = P - tri.v1;
+		glm::vec3 d2 = P - tri.v2;
+		glm::vec3 d3 = P - tri.v3;
+		float totalArea = glm::dot(glm::cross(e1, e2), planeNormal) / 2;
+		bool b0 = (glm::dot(glm::cross(e1, d3), planeNormal)/2 / totalArea) >= 0;
+		bool b1 = (glm::dot(glm::cross(e2, d1), planeNormal)/2 / totalArea) >= 0;
+		bool b2 = (glm::dot(glm::cross(e3, d2), planeNormal)/2 / totalArea) >= 0;
+		if (b0 && b1 && b2) {
+			return glm::distance(P, ray.origin);
 		}
 	}
 	return -1.0f;
 }
 
 float intersectSphere(const Camera::Ray& rawRay, const Shape& object) {
-	Camera::Ray ray(glm::inverse(object.transform) * glm::vec4(rawRay.origin, 1.0f), glm::inverse(object.transform) * glm::vec4(rawRay.dir, 0.0f));
+	Camera::Ray ray(glm::inverse(object.transform) * glm::vec4(rawRay.origin, 1.0f), glm::normalize(glm::inverse(object.transform) * glm::vec4(rawRay.dir, 0.0f)));
 	float a = glm::dot(ray.dir, ray.dir);
 	float b = 2 * glm::dot(ray.dir, (ray.origin - object.center));
 	float c = glm::dot((ray.origin - object.center), (ray.origin - object.center)) - glm::pow(object.radius, 2);
@@ -179,8 +192,10 @@ int main(int argc, char* argv[]) {
 			Normals and transformed normals (inverse transpose)
 			Implement Lighting
 			Implement file reading
+			Implement shadows
+			Implement reflection
 	*/
-	Scene scene("test_scenes/scene3.test");
+	Scene scene("test_scenes/scene2.test");
 	unsigned int w = scene.getWidth();
 	unsigned int h = scene.getHeight();
 
@@ -190,6 +205,7 @@ int main(int argc, char* argv[]) {
 
 	std::vector<Shape*> objects = scene.getSceneObjects();
 	Camera cam = scene.getCamera();
+	std::cout << cam << std::endl;
 	
 	for (int i = 0; i < h; i++) {
 		for (int j = 0; j < w; j++) {
@@ -199,8 +215,7 @@ int main(int argc, char* argv[]) {
 				pixelColor = backgroundColor;
 			}
 			else {
-				pixelColor = objects[closestIndex]->material.ambient;
-				//objects[closestIndex]->material.diffuse
+				pixelColor = objects[closestIndex]->material.ambient + objects[closestIndex]->material.diffuse;
 			}
 			
 			pixels[i*w * 3 + j * 3] = pixelColor.b;
