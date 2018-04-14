@@ -19,11 +19,12 @@ class Scene
 		const std::string& getOutputFileName() const;
 		const unsigned int getWidth() const;
 		const unsigned int getHeight() const;
+		const std::vector<Light>& getLights() const;
+		glm::vec3 attenuation;
 
 	private:
 		Camera cam;
 		std::vector<Light> lights;
-		glm::vec3 attenuation;
 		int maxDepth;
 		unsigned int width, height;
 		std::string outputFileName;

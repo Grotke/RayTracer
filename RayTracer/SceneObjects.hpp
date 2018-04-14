@@ -18,6 +18,9 @@ struct Color {
 	{
 		return Color(r + other.r , g + other.g , b + other.b);
 	}
+	glm::vec3 getAsFloat() const {
+		return glm::vec3(r / (float)max, g / (float)max, b / (float)max);
+	}
 };
 
 struct Material {
@@ -58,5 +61,18 @@ struct Shape {
 struct Light {
 	glm::vec4 location;
 	Color color;
+	bool isPointLight() { return location.w > 0.0f; }
 	Light(const glm::vec4& location, const Color& color) : location(location), color(color){}
+};
+
+struct Intersection {
+	//Could use a really big number but it's theoretically possible that the intersect 
+	//could be very large so I'm using a negative number which should never occur naturally
+	float distAlongRay = -1.0f;
+	int objectIndex = -1;
+	glm::vec3 intersectNormal;
+	bool isValidIntersection() { return distAlongRay >= 0.1f; }
+	Intersection(float distAlongRay, int objectIndex = -1): distAlongRay(distAlongRay), objectIndex(objectIndex) {}
+	Intersection(float distAlongRay, const glm::vec3& normal) : distAlongRay(distAlongRay), intersectNormal(glm::normalize(normal)) {}
+	Intersection(){}
 };

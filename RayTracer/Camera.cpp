@@ -1,7 +1,6 @@
 #include "Camera.h"
 
 #include <glm/trigonometric.hpp>
-#include <glm/glm.hpp>
 #include <iostream>
 
 
@@ -16,7 +15,7 @@ Camera::~Camera()
 {
 }
 
-Camera::Ray Camera::createRay(float i, float j, int width, int height) {
+Camera::Ray Camera::createRayToPixel(float i, float j, int width, int height) const {
 	glm::vec3 w = -glm::normalize(forward);
 	glm::vec3 u = glm::normalize(glm::cross(up, w));
 	glm::vec3 v = glm::normalize(glm::cross(w, u));
@@ -25,6 +24,14 @@ Camera::Ray Camera::createRay(float i, float j, int width, int height) {
 	glm::vec3 rayDir = glm::normalize((alpha * u) + (beta * v) - w);
 
 	return Ray(lookFrom, rayDir);
+}
+
+glm::vec3 Camera::createPointFromRay(Ray ray, float t) {
+	return ray.origin + ray.dir*t;
+}
+
+const glm::vec3& Camera::getEye() const {
+	return lookFrom;
 }
 
 

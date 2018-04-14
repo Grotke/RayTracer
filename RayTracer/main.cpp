@@ -31,11 +31,31 @@ std::ostream& operator<<(std::ostream &strm, const Camera &cam) {
 	return strm << "Camera(lookAt: " << cam.lookAt << " lookFrom: " << cam.lookFrom << " up: " << cam.up << " forward: " << cam.forward << " fov: " << cam.fovy << ")";
 }
 
+Color operator*(const Color& color, float x) {
+	return Color(color.r * x, color.g * x, color.b * x);
+}
+
+Color operator*(float x, const Color& color) {
+	return color * x;
+}
+
+Color operator*(const Color& intColor1, const Color& intColor2) {
+	glm::vec3 color1 = intColor1.getAsFloat();
+	glm::vec3 color2 = intColor2.getAsFloat();
+	return Color(color1.x * color2.x, color1.y * color2.y, color1.z * color2.z);
+}
+
+void operator+=(Color& color1, const Color& color2) {
+	color1.r = glm::clamp(color1.r + color2.r, color1.min, color1.max);
+	color1.g = glm::clamp(color1.g + color2.g, color1.min, color1.max);;
+	color1.b = glm::clamp(color1.b + color2.b, color1.min, color1.max);;
+}
+
 float calculateDiscriminant(float a, float b, float c) {
 	return glm::pow(b, 2) - (4 * a*c);
 }
 
-float intersectTriangle(const Camera::Ray& ray, const Shape& tri) {
+Intersection intersectTriangle(const Camera::Ray& ray, const Shape& tri) {
 	glm::vec3 e1 = tri.v3 - tri.v2;
 	glm::vec3 e2 = tri.v1 - tri.v3;
 	glm::vec3 e3 = tri.v2 - tri.v1;
@@ -52,20 +72,20 @@ float intersectTriangle(const Camera::Ray& ray, const Shape& tri) {
 		bool b1 = (glm::dot(glm::cross(e2, d1), planeNormal)/2 / totalArea) >= 0;
 		bool b2 = (glm::dot(glm::cross(e3, d2), planeNormal)/2 / totalArea) >= 0;
 		if (b0 && b1 && b2) {
-			return glm::distance(P, ray.origin);
+			return Intersection(glm::distance(P, ray.origin), planeNormal);
 		}
 	}
-	return -1.0f;
+	return Intersection();
 }
 
-float intersectSphere(const Camera::Ray& rawRay, const Shape& object) {
+Intersection intersectSphere(const Camera::Ray& rawRay, const Shape& object) {
 	Camera::Ray ray(glm::inverse(object.transform) * glm::vec4(rawRay.origin, 1.0f), glm::normalize(glm::inverse(object.transform) * glm::vec4(rawRay.dir, 0.0f)));
 	float a = glm::dot(ray.dir, ray.dir);
 	float b = 2 * glm::dot(ray.dir, (ray.origin - object.center));
 	float c = glm::dot((ray.origin - object.center), (ray.origin - object.center)) - glm::pow(object.radius, 2);
 	float discrim = calculateDiscriminant(a, b, c);
 	if (discrim < 0) {
-		return -1.0f;
+		return Intersection();
 	}
 	float x1 = (-b + glm::sqrt(discrim)) / 2 * a;
 	float x2 = (-b - glm::sqrt(discrim)) / 2 * a;
@@ -80,29 +100,27 @@ float intersectSphere(const Camera::Ray& rawRay, const Shape& object) {
 	}
 	glm::vec3 transfPoint = ray.origin + ray.dir * t;
 	glm::vec3 finalPoint = object.transform * glm::vec4(transfPoint, 1.0f);
-	return glm::distance(finalPoint, rawRay.origin);
+	return Intersection(glm::distance(finalPoint, rawRay.origin), finalPoint - object.center);
 }
 
-float intersect(const Camera::Ray& ray, const Shape& object) {
+Intersection intersect(const Camera::Ray& ray, const Shape& object) {
 	if (object.isTriangle) {
 		return intersectTriangle(ray, object);
 	}
 	return intersectSphere(ray, object);
 }
 
-int findClosestObjectIndex(const Camera::Ray& ray, const std::vector<Shape*>& objects) {
-	int closestObjectIndex = -1;
-	//Could use a really big number but it's theoretically possible that the intersect 
-	//could be very large so using a negative number which it should never be
-	float closestHit = -1.0f;
+Intersection findClosestIntersection(const Camera::Ray& ray, const std::vector<Shape*>& objects) {
+	Intersection objIntersect;
+
 	for (int i = 0; i < objects.size(); i++) {
-		float hit = intersect(ray, *objects[i]);
-		if (hit >= 0.0f && (hit < closestHit || closestHit < 0.0f)) {
-			closestHit = hit;
-			closestObjectIndex = i;
+		Intersection currentIntersect = intersect(ray, *objects[i]);
+		if (currentIntersect.isValidIntersection()&& (currentIntersect.distAlongRay < objIntersect.distAlongRay || !objIntersect.isValidIntersection())) {
+			objIntersect = currentIntersect;
+			objIntersect.objectIndex = i;
 		}
 	}
-	return closestObjectIndex;
+	return objIntersect;
 }
 
 std::vector<Shape*>& getTestSceneObjects(int scene) {
@@ -166,6 +184,51 @@ Camera& getTestSceneCamera(int scene, int camera) {
 	return *cam;
 }
 
+//TODO: Fix these color multiplications and probably +=
+//TODO: Adjust color calculation
+float calculateDiffuseLighting(const glm::vec3& normal, const glm::vec3& objToLightDir) {
+	return std::max(glm::dot(normal, objToLightDir), 0.0f);
+}
+
+float calculateSpecularLighting(const Material& objMat, const glm::vec3& normal, const glm::vec3& halfAngle) {
+	return glm::pow(std::max(glm::dot(halfAngle, normal), 0.0f), objMat.shininess);
+}
+
+float calculateLightIntensity(const glm::vec3& attenuation, float distance) {
+	return attenuation.x + attenuation.y*distance + attenuation.z*glm::pow(distance, 2.0f);
+}
+
+Color calculatePixelColor(const Scene& scene, const glm::vec3& intersectPoint, const glm::vec3& intersectNormal, const Material& objMat) {
+	Color colorFromLights = objMat.ambient + objMat.emission;
+	Color diffuseLightColor;
+	Color specularLightColor;
+	for (Light light : scene.getLights()) {
+		glm::vec3 lightRayDir;
+		float distance;
+		if (light.isPointLight()) {
+			lightRayDir = glm::vec3(light.location) - intersectPoint;
+			distance = glm::length(lightRayDir);
+		}
+		else {
+			lightRayDir = -glm::vec3(light.location);
+			distance = 0.0f;
+		}
+		Camera::Ray ray(intersectPoint, lightRayDir);
+		Intersection intersect = findClosestIntersection(ray, scene.getSceneObjects());
+		//Differentiate directional and point lights when calculating ray direction
+		if (!intersect.isValidIntersection()) {
+			glm::vec3 eyeDir = glm::normalize(scene.getCamera().getEye() - intersectPoint);
+			glm::vec3 halfAngle = glm::normalize(lightRayDir + eyeDir);
+			float atten = calculateLightIntensity(scene.attenuation, distance);
+			diffuseLightColor += atten*calculateDiffuseLighting(intersectNormal, lightRayDir) * light.color;
+			specularLightColor += atten*calculateSpecularLighting(objMat, intersectNormal, halfAngle) * light.color;
+		}
+	}
+	colorFromLights += objMat.diffuse * diffuseLightColor;
+	colorFromLights += objMat.specular * specularLightColor;
+	return colorFromLights;
+}
+
 //TODO: Fix pixel coloring. Implement depth with multiple spheres. Implement materials. Implement triangle ray intersection. Transformations.
 
 int main(int argc, char* argv[]) {
@@ -195,7 +258,7 @@ int main(int argc, char* argv[]) {
 			Implement shadows
 			Implement reflection
 	*/
-	Scene scene("test_scenes/scene2.test");
+	Scene scene("test_scenes/scene1.test");
 	unsigned int w = scene.getWidth();
 	unsigned int h = scene.getHeight();
 
@@ -209,13 +272,17 @@ int main(int argc, char* argv[]) {
 	
 	for (int i = 0; i < h; i++) {
 		for (int j = 0; j < w; j++) {
-			Camera::Ray ray = cam.createRay(j + 0.5, i + 0.5, w, h);
-			int closestIndex = findClosestObjectIndex(ray, objects);
-			if (closestIndex < 0) {
+			Camera::Ray ray = cam.createRayToPixel(j + 0.5, i + 0.5, w, h);
+			Intersection closestIntersect = findClosestIntersection(ray, objects);
+			if (!closestIntersect.isValidIntersection()) {
 				pixelColor = backgroundColor;
 			}
 			else {
-				pixelColor = objects[closestIndex]->material.ambient + objects[closestIndex]->material.diffuse;
+				//calculate lighting by casting ray to all lights and taking material colors into consideration, if the ray is obscured the pixel is "in shadow" meaning it doesn't take color from that light,
+				//if no lights light the object, it'll be the ambient color
+				//Then cast reflection ray to intersect with another object, pixel being rendered takes on color from that object
+				pixelColor = calculatePixelColor(scene, Camera::createPointFromRay(ray, closestIntersect.distAlongRay), closestIntersect.intersectNormal, objects[closestIntersect.objectIndex]->material);
+					//objects[closestIndex]->material.ambient + objects[closestIndex]->material.diffuse;
 			}
 			
 			pixels[i*w * 3 + j * 3] = pixelColor.b;

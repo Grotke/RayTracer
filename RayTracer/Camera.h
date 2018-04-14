@@ -1,4 +1,5 @@
 #pragma once
+#include <glm/glm.hpp>
 #include <glm/vec3.hpp>
 #include <iostream>
 
@@ -12,10 +13,12 @@ public:
 	struct Ray {
 		glm::vec3 dir;
 		glm::vec3 origin;
-		Ray(const glm::vec3& org, const glm::vec3& dir) : origin(org), dir(dir) {}
+		Ray(const glm::vec3& org, const glm::vec3& dir) : origin(org), dir(glm::normalize(dir)) {}
 	};
 
-	 Ray createRay(float i, float j, int width, int height);
+	 Ray createRayToPixel(float i, float j, int width, int height) const;
+	 const glm::vec3& getEye() const;
+	 static glm::vec3 createPointFromRay(Ray ray, float t);
 
 private:
 	float fovy;

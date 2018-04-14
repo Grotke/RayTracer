@@ -278,3 +278,6 @@ const unsigned int Scene::getHeight() const {
 	return height;
 }
 
+const std::vector<Light>& Scene::getLights() const {
+	return lights;
+}
