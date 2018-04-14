@@ -39,17 +39,16 @@ Color operator*(float x, const Color& color) {
 	return color * x;
 }
 
-Color operator*(const Color& intColor1, const Color& intColor2) {
-	glm::vec3 color1 = intColor1.getAsFloat();
-	glm::vec3 color2 = intColor2.getAsFloat();
-	return Color(color1.x * color2.x, color1.y * color2.y, color1.z * color2.z);
+Color operator*(const Color& color1, const Color& color2) {
+	return Color(color1.r * color2.r, color1.g * color2.g, color1.b * color2.b);
 }
 
-void operator+=(Color& color1, const Color& color2) {
-	color1.r = glm::clamp(color1.r + color2.r, color1.min, color1.max);
-	color1.g = glm::clamp(color1.g + color2.g, color1.min, color1.max);;
-	color1.b = glm::clamp(color1.b + color2.b, color1.min, color1.max);;
-}
+/*Color& operator+=(Color& color1, const Color& color2) {
+	color1.r += color2.r;
+	color1.g += color2.g;
+	color1.b += color2.b;
+	return color1;
+}*/
 
 float calculateDiscriminant(float a, float b, float c) {
 	return glm::pow(b, 2) - (4 * a*c);
@@ -187,7 +186,7 @@ Camera& getTestSceneCamera(int scene, int camera) {
 //TODO: Fix these color multiplications and probably +=
 //TODO: Adjust color calculation
 float calculateDiffuseLighting(const glm::vec3& normal, const glm::vec3& objToLightDir) {
-	return std::max(glm::dot(normal, objToLightDir), 0.0f);
+	return std::max(glm::dot(glm::normalize(normal), glm::normalize(objToLightDir)), 0.0f);
 }
 
 float calculateSpecularLighting(const Material& objMat, const glm::vec3& normal, const glm::vec3& halfAngle) {
@@ -210,7 +209,7 @@ Color calculatePixelColor(const Scene& scene, const glm::vec3& intersectPoint, c
 			distance = glm::length(lightRayDir);
 		}
 		else {
-			lightRayDir = -glm::vec3(light.location);
+			lightRayDir = glm::vec3(light.location);
 			distance = 0.0f;
 		}
 		Camera::Ray ray(intersectPoint, lightRayDir);
@@ -220,7 +219,8 @@ Color calculatePixelColor(const Scene& scene, const glm::vec3& intersectPoint, c
 			glm::vec3 eyeDir = glm::normalize(scene.getCamera().getEye() - intersectPoint);
 			glm::vec3 halfAngle = glm::normalize(lightRayDir + eyeDir);
 			float atten = calculateLightIntensity(scene.attenuation, distance);
-			diffuseLightColor += atten*calculateDiffuseLighting(intersectNormal, lightRayDir) * light.color;
+			float lightPercent = calculateDiffuseLighting(intersectNormal, lightRayDir);
+			diffuseLightColor += atten*lightPercent * light.color;
 			specularLightColor += atten*calculateSpecularLighting(objMat, intersectNormal, halfAngle) * light.color;
 		}
 	}
@@ -258,7 +258,7 @@ int main(int argc, char* argv[]) {
 			Implement shadows
 			Implement reflection
 	*/
-	Scene scene("test_scenes/scene1.test");
+	Scene scene("test_scenes/scene1_z.test");
 	unsigned int w = scene.getWidth();
 	unsigned int h = scene.getHeight();
 
@@ -282,12 +282,11 @@ int main(int argc, char* argv[]) {
 				//if no lights light the object, it'll be the ambient color
 				//Then cast reflection ray to intersect with another object, pixel being rendered takes on color from that object
 				pixelColor = calculatePixelColor(scene, Camera::createPointFromRay(ray, closestIntersect.distAlongRay), closestIntersect.intersectNormal, objects[closestIntersect.objectIndex]->material);
-					//objects[closestIndex]->material.ambient + objects[closestIndex]->material.diffuse;
 			}
 			
-			pixels[i*w * 3 + j * 3] = pixelColor.b;
-			pixels[i*w* 3 + (j * 3) + 1] = pixelColor.g;
-			pixels[i*w* 3 + (j * 3) + 2] = pixelColor.r;
+			pixels[i*w * 3 + j * 3] = pixelColor.getB();
+			pixels[i*w* 3 + (j * 3) + 1] = pixelColor.getG();
+			pixels[i*w* 3 + (j * 3) + 2] = pixelColor.getR();
 		}
 	}
 
