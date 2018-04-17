@@ -1,5 +1,7 @@
 #pragma once
 #include <glm/glm.hpp>
+#include <glm/gtc/epsilon.hpp>
+#include <limits>
 struct Color {
 	float r, g, b;
 	int min = 0, max = 255;
@@ -87,10 +89,12 @@ struct Light {
 struct Intersection {
 	//Could use a really big number but it's theoretically possible that the intersect 
 	//could be very large so I'm using a negative number which should never occur naturally
-	float distAlongRay = -1.0f;
+	float distAlongRay = std::numeric_limits<float>::infinity();
 	int objectIndex = -1;
 	glm::vec3 intersectNormal;
-	bool isValidIntersection() { return distAlongRay >= 0.1f; }
+	bool isValidIntersection() {
+		return !glm::isinf(distAlongRay);
+	}//return glm::epsilonNotEqual(distAlongRay, -1.0f,0.001f) && glm::epsilonNotEqual(distAlongRay, 0.0f, 0.1f); }
 	Intersection(float distAlongRay, int objectIndex = -1): distAlongRay(distAlongRay), objectIndex(objectIndex) {}
 	Intersection(float distAlongRay, const glm::vec3& normal) : distAlongRay(distAlongRay), intersectNormal(glm::normalize(normal)) {}
 	Intersection(){}
