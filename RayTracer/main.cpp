@@ -62,6 +62,9 @@ Intersection intersectTriangle(const Camera::Ray& ray, const Shape& tri) {
 	if (!glm::epsilonEqual(glm::dot(ray.dir, planeNormal), 0.0f, 0.01f)) {
 		float d = glm::dot(tri.v1, planeNormal);
 		float t = (d - glm::dot(ray.origin, planeNormal)) / glm::dot(ray.dir, planeNormal);
+		if (t < 0.005f) {
+			return Intersection();
+		}
 		glm::vec3 P = ray.origin + t*ray.dir;
 		glm::vec3 d1 = P - tri.v1;
 		glm::vec3 d2 = P - tri.v2;
@@ -92,6 +95,9 @@ Intersection intersectSphere(const Camera::Ray& rawRay, const Shape& object) {
 	if (x1 >= 0.0f && x2 >= 0.0f) {
 		//Get smallest positive number
 		t = std::min(x1, x2);
+		if (glm::epsilonEqual(t, 0.0f, 0.005f)) {
+			return Intersection();
+		}
 	}
 	else {
 		//One is negative so return the maximum number which should be positive
@@ -230,6 +236,7 @@ Color calculatePixelColor(const Scene& scene, const glm::vec3& intersectPoint, c
 			specularLightColor += atten*calculateSpecularLighting(objMat, intersectNormal, halfAngle) * light.color;
 		}
 		else {
+			colorFromLights += scene.getSceneObjects()[intersect.objectIndex]->material.diffuse;
 		/*	if (intersect.objectIndex == 1) {
 				colorFromLights += Color(1.0f, 0.0f, 1.0f);
 			}

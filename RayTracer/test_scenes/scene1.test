@@ -6,22 +6,23 @@ size 320 240
 # Now specify the camera.  This is what you should implement.
 # This file has 4 camera positions.  Render your scene for all 4.
 
-camera 0 0 4 0 0 0 0 1 0 30
+#camera 0 0 4 0 0 0 0 1 0 30
 #camera 0 -3 3 0 0 0 0 1 0 30
 #camera -4 0 1 0 0 1 0 0 1 45
 #camera -4 -4 4 1 0 0 0 1 0 30
+camera -4 0 0 0 0 0 0 1 0 30
 
 # lighting/material definitions
 # for initial testing, you should get the geometry right
 # you may want to use dummy (constant) shading, ignoring these lines
 
 ambient .1 .1 .1
-#directional 0 0 1 .5 .5 .5
+directional 0 0 -1 .5 .5 .5
 #directional 1 0 0 .5 .5 .5
-directional 1 -1 0 .5 .5 .5 
-point 4 0 4 .5 .5 .5
-#point -2 0 0 .5 .5 .5
-diffuse 1 0 0 
+#directional 1 -1 0 .5 .5 .5 
+#point 4 0 4 .5 .5 .5
+#point 0 2 0 .5 .5 .5
+diffuse 0.8 0.8 0.8 
 specular 1 1 1
 shininess 500
 
@@ -37,9 +38,15 @@ vertex -1 -1 0
 vertex +1 -1 0
 vertex +1 +1 0
 vertex -1 +1 0
-
-#tri 0 1 2
-#tri 0 2 3
+pushTransform
+translate 0 -0.6 0
+rotate 1 0 0 -70
+tri 0 1 2
+tri 0 2 3
+popTransform
+diffuse 1 0 0 
+specular 1 1 1
+shininess 500
 sphere 0 1 0 0.15
 diffuse 0 1 0 
 specular 1 1 1
@@ -49,5 +56,6 @@ sphere 0 0 0 0.5
 diffuse 0 0 1 
 specular 1 1 1
 shininess 5
-sphere -0.7 0.5 0 0.20
+#sphere -0.7 0.5 0 0.20
+sphere 0 -0.3 1 0.20
 
