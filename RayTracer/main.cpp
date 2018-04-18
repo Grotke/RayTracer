@@ -91,15 +91,8 @@ Intersection intersectSphere(const Camera::Ray& rawRay, const Shape& object) {
 	}
 	float x1 = (-b + glm::sqrt(discrim)) / 2.0f * a;
 	float x2 = (-b - glm::sqrt(discrim)) / 2.0f * a;
-	float t;
-	if (x1 >= 0.0f && x2 >= 0.0f) {
-		//Get smallest positive number
-		t = std::min(x1, x2);
-		if (glm::epsilonEqual(t, 0.0f, 0.005f)) {
-			return Intersection();
-		}
-	}
-	else {
+	float t = std::min(x1, x2);
+	if (t < 0.005f) {
 		//One is negative so return the maximum number which should be positive
 		return Intersection();
 	}
