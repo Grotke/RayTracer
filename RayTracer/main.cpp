@@ -11,7 +11,11 @@
 #include "Camera.h"
 #include "SceneObjects.hpp"
 #include "Scene.h"
-
+bool debugLight = false;
+bool debugShadows = false;
+bool debugIntersect = false;
+bool debugNormals = false;
+std::string testFile = "test_scenes/scene3_light.test";
 /*
 	Problems Encountered
 		Fovx calculation
@@ -97,8 +101,10 @@ Intersection intersectSphere(const Camera::Ray& rawRay, const Shape& object) {
 		return Intersection();
 	}
 	glm::vec3 transfPoint = ray.origin + ray.dir * t;
+	glm::vec3 normal = glm::transpose(glm::inverse(object.transform)) * glm::vec4(transfPoint - object.center, 0.0f);
+
 	glm::vec3 finalPoint = object.transform * glm::vec4(transfPoint, 1.0f);
-	return Intersection(glm::distance(finalPoint, rawRay.origin), finalPoint - object.center);
+	return Intersection(glm::distance(finalPoint, rawRay.origin), normal);
 }
 
 Intersection intersect(const Camera::Ray& ray, const Shape& object) {
@@ -222,14 +228,24 @@ Color calculatePixelColor(const Scene& scene, const glm::vec3& intersectPoint, c
 
 			float atten = calculateLightIntensity(scene.attenuation, distance);
 			float lightPercent = calculateDiffuseLighting(intersectNormal, lightDir);
-			diffuseLightColor += atten*lightPercent * light.color;
+			if (debugLight) {
+				colorFromLights += Color(lightPercent, lightPercent, lightPercent);
+			}
+			else if (debugNormals) {
+				colorFromLights += Color(intersectNormal.x, intersectNormal.y, intersectNormal.z);
+			}
+			else {
+				diffuseLightColor += atten * lightPercent * light.color;
 
-			glm::vec3 eyeDir = glm::normalize(scene.getCamera().getEye() - intersectPoint);
-			glm::vec3 halfAngle = glm::normalize(lightDir + eyeDir);
-			specularLightColor += atten*calculateSpecularLighting(objMat, intersectNormal, halfAngle) * light.color;
+				glm::vec3 eyeDir = glm::normalize(scene.getCamera().getEye() - intersectPoint);
+				glm::vec3 halfAngle = glm::normalize(lightDir + eyeDir);
+				specularLightColor += atten * calculateSpecularLighting(objMat, intersectNormal, halfAngle) * light.color;
+			}
 		}
 		else {
-			colorFromLights += scene.getSceneObjects()[intersect.objectIndex]->material.diffuse;
+			if (debugShadows) {
+				colorFromLights += scene.getSceneObjects()[intersect.objectIndex]->material.diffuse;
+			}
 		/*	if (intersect.objectIndex == 1) {
 				colorFromLights += Color(1.0f, 0.0f, 1.0f);
 			}
@@ -273,7 +289,7 @@ int main(int argc, char* argv[]) {
 			Implement shadows
 			Implement reflection
 	*/
-	Scene scene("test_scenes/scene1.test");
+	Scene scene(testFile);
 	unsigned int w = scene.getWidth();
 	unsigned int h = scene.getHeight();
 
@@ -296,9 +312,13 @@ int main(int argc, char* argv[]) {
 				//calculate lighting by casting ray to all lights and taking material colors into consideration, if the ray is obscured the pixel is "in shadow" meaning it doesn't take color from that light,
 				//if no lights light the object, it'll be the ambient color
 				//Then cast reflection ray to intersect with another object, pixel being rendered takes on color from that object
-				pixelColor = calculatePixelColor(scene, Camera::createPointFromRay(ray, closestIntersect.distAlongRay), closestIntersect.intersectNormal, objects[closestIntersect.objectIndex]->material);
+				if (debugIntersect) {
+					pixelColor = Color(1.0f, 0.0f, 0.0f);
+				}
+				else {
+					pixelColor = calculatePixelColor(scene, Camera::createPointFromRay(ray, closestIntersect.distAlongRay), closestIntersect.intersectNormal, objects[closestIntersect.objectIndex]->material);
+				}
 			}
-			
 			pixels[i*w * 3 + j * 3] = pixelColor.getB();
 			pixels[i*w* 3 + (j * 3) + 1] = pixelColor.getG();
 			pixels[i*w* 3 + (j * 3) + 2] = pixelColor.getR();

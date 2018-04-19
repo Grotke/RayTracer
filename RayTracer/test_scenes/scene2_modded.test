@@ -17,8 +17,11 @@ size 160 120
 camera -2 -2 2 0 0 0 1 1 2 60
 #camera +2 +2 2 0 0 0 -1 -1 2 60
 #camera -2 -2 -2 0 0 0 -1 -1 2 60
-directional 0 0 -1 .5 .5 .5
-
+#directional 2 2 -2 .5 .5 .5
+point -2 -2 2 0.5 0.5 0.5
+ambient .1 .1 .1
+specular 1 1 1
+shininess 100
 # Now specify the geometry.  First the cube, then the spheres
 
 maxverts 8
@@ -37,33 +40,33 @@ vertex -1 +1 +1
 # No lighting calculations should be performed since I haven't defined any 
 # lights.
 
-ambient .5 0 .5 
+diffuse .5 0 .5 
 # face -Y
 tri 0 1 5 
 tri 0 5 4 
-ambient .5 1 .5 
+diffuse .5 1 .5 
 # face +Y
 tri 3 7 6
 tri 3 6 2
-ambient 1 .5 .5 
+diffuse 1 .5 .5 
 # face +X
 tri 1 2 6
 tri 1 6 5 
-ambient 0 .5 .5 
+diffuse 0 .5 .5 
 # face -X
 tri 0 7 3 
 tri 0 4 7 
-ambient .5 .5 0
+diffuse .5 .5 0
 # face -Z
 tri 0 3 2 
 tri 0 2 1
-ambient .5 .5 1
+diffuse .5 .5 1
 # face +Z
 tri 4 5 6 
 tri 4 6 7 
 
 # Make spheres
-ambient 1 1 1
+diffuse 1 1 1
 
 sphere 1 0 0 0.15
 
