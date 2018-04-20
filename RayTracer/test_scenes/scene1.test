@@ -24,7 +24,7 @@ directional 0 0 -1 .5 .5 .5
 #point 4 0 4 .5 .5 .5
 #point 0 2 0 .5 .5 .5
 diffuse 0.8 0.8 0.8 
-specular 1 1 1
+specular 0.1 0.1 0.1
 shininess 500
 
 # Now specify the geometry 
@@ -46,16 +46,16 @@ tri 0 1 2
 tri 0 2 3
 popTransform
 diffuse 1 0 0 
-specular 1 1 1
+specular 0.1 0.1 0.1
 shininess 500
 sphere 0 1 0 0.15
 diffuse 0 1 0 
-specular 1 1 1
+specular 0.1 0.1 0.1
 shininess 1000
 sphere 0 0 0 0.5
 
 diffuse 0 0 1 
-specular 1 1 1
+specular 0.1 0.1 0.1
 shininess 5
 #sphere -0.7 0.5 0 0.20
 sphere 0 -0.3 1 0.20

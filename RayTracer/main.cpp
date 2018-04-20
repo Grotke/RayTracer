@@ -15,7 +15,7 @@ bool debugLight = false;
 bool debugShadows = false;
 bool debugIntersect = false;
 bool debugNormals = false;
-std::string testFile = "test_scenes/scene3_light.test";
+std::string testFile = "test_scenes/scene1.test";
 /*
 	Problems Encountered
 		Fovx calculation
@@ -202,7 +202,7 @@ float calculateLightIntensity(const glm::vec3& attenuation, float distance) {
 	return attenuation.x + attenuation.y*distance + attenuation.z*glm::pow(distance, 2.0f);
 }
 
-Color calculatePixelColor(const Scene& scene, const glm::vec3& intersectPoint, const glm::vec3& intersectNormal, const Material& objMat) {
+Color calculateLightingColor(const Scene& scene, const glm::vec3& intersectPoint, const glm::vec3& intersectNormal, const Material& objMat) {
 	Color colorFromLights = objMat.ambient + objMat.emission;
 	Color diffuseLightColor;
 	Color specularLightColor;
@@ -259,7 +259,31 @@ Color calculatePixelColor(const Scene& scene, const glm::vec3& intersectPoint, c
 	colorFromLights += objMat.specular * specularLightColor;
 	return colorFromLights;
 }
-
+Color computePixelColor(const Camera::Ray& ray, const Scene& scene, int currentDepth) {
+	std::vector<Shape*> objects = scene.getSceneObjects();
+	if (currentDepth <= scene.maxDepth) {
+		Intersection closestIntersect = findClosestIntersection(ray, objects);
+		if (!closestIntersect.isValidIntersection()) {
+			return scene.backgroundColor;
+		}
+		else {
+			//calculate lighting by casting ray to all lights and taking material colors into consideration, if the ray is obscured the pixel is "in shadow" meaning it doesn't take color from that light,
+			//if no lights light the object, it'll be the ambient color
+			//Then cast reflection ray to intersect with another object, pixel being rendered takes on color from that object
+			if (debugIntersect) {
+				return Color(1.0f, 0.0f, 0.0f);
+			}
+			else {
+				Color lightColor = calculateLightingColor(scene, Camera::createPointFromRay(ray, closestIntersect.distAlongRay), closestIntersect.intersectNormal, objects[closestIntersect.objectIndex]->material);
+				Camera::Ray reflectRay(Camera::createPointFromRay(ray, closestIntersect.distAlongRay), ray.dir - 2.0f*glm::dot(ray.dir, closestIntersect.intersectNormal)*closestIntersect.intersectNormal);
+				return lightColor + objects[closestIntersect.objectIndex]->material.specular*computePixelColor(reflectRay, scene, ++currentDepth);
+			}
+		}
+	}
+	else {
+		return Color();
+	}
+}
 //TODO: Fix pixel coloring. Implement depth with multiple spheres. Implement materials. Implement triangle ray intersection. Transformations.
 
 int main(int argc, char* argv[]) {
@@ -294,7 +318,7 @@ int main(int argc, char* argv[]) {
 	unsigned int h = scene.getHeight();
 
 	std::vector<BYTE> pixels(w*h * 3);
-	Color backgroundColor = Color(0, 0, 0);
+	scene.backgroundColor = Color(0, 0, 0);
 	Color pixelColor;
 
 	std::vector<Shape*> objects = scene.getSceneObjects();
@@ -304,7 +328,7 @@ int main(int argc, char* argv[]) {
 	for (int i = 0; i < h; i++) {
 		for (int j = 0; j < w; j++) {
 			Camera::Ray ray = cam.createRayToPixel(j + 0.5, i + 0.5, w, h);
-			Intersection closestIntersect = findClosestIntersection(ray, objects);
+	/*		Intersection closestIntersect = findClosestIntersection(ray, objects);
 			if (!closestIntersect.isValidIntersection()) {
 				pixelColor = backgroundColor;
 			}
@@ -318,7 +342,8 @@ int main(int argc, char* argv[]) {
 				else {
 					pixelColor = calculatePixelColor(scene, Camera::createPointFromRay(ray, closestIntersect.distAlongRay), closestIntersect.intersectNormal, objects[closestIntersect.objectIndex]->material);
 				}
-			}
+			}*/
+			pixelColor = computePixelColor(ray, scene, 1);
 			pixels[i*w * 3 + j * 3] = pixelColor.getB();
 			pixels[i*w* 3 + (j * 3) + 1] = pixelColor.getG();
 			pixels[i*w* 3 + (j * 3) + 2] = pixelColor.getR();

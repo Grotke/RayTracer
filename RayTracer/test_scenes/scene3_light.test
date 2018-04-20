@@ -2,8 +2,8 @@
 # Intended to show transforms
 # I know it's not the most exciting of scenes...
 
-size 160 120 
-
+#size 160 120 
+size 640 480
 camera 0 -4 4 0 -1 0 0 1 1 45
 
 ambient .1 .1 .1

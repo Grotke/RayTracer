@@ -21,11 +21,12 @@ class Scene
 		const unsigned int getHeight() const;
 		const std::vector<Light>& getLights() const;
 		glm::vec3 attenuation;
+		int maxDepth;
+		Color backgroundColor;
 
 	private:
 		Camera cam;
 		std::vector<Light> lights;
-		int maxDepth;
 		unsigned int width, height;
 		std::string outputFileName;
 		std::vector<Shape*> objects;
