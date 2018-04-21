@@ -7,7 +7,7 @@ size 640 480
 camera 0 -4 4 0 -1 0 0 1 1 45
 
 ambient .1 .1 .1
-specular 0.5 0.5 0.5
+specular 0.1 0.1 0.1
 shininess 100
 #point 0 -2 0 .5 .5 .5
 directional 0 -1 -1 .5 .5 .5
@@ -132,7 +132,7 @@ tri 4 6 7
 
 
 # Now draw the spheres
-
+specular 0.5 0.5 0.5
 diffuse 0 1 0 
 popTransform
 pushTransform 

@@ -2,6 +2,8 @@
 #include <algorithm>
 #include <vector>
 #include <stack>
+#include <stdlib.h>
+#include <time.h>
 
 #include "FreeImage.h"
 #include <glm/glm.hpp>
@@ -11,11 +13,13 @@
 #include "Camera.h"
 #include "SceneObjects.hpp"
 #include "Scene.h"
-bool debugLight = true;
+bool debugLight = false;
 bool debugShadows = false;
 bool debugIntersect = false;
 bool debugNormals = false;
-std::string testFile = "final_scenes/scene6_small.test";
+bool reflections = false;
+double sampleTimeInSeconds = 5.0;
+std::string testFile = "final_scenes/scene6.test";
 /*
 	Problems Encountered
 		Fovx calculation
@@ -276,7 +280,12 @@ Color computePixelColor(const Camera::Ray& ray, const Scene& scene, int currentD
 			else {
 				Color lightColor = calculateLightingColor(scene, Camera::createPointFromRay(ray, closestIntersect.distAlongRay), closestIntersect.intersectNormal, objects[closestIntersect.objectIndex]->material);
 				Camera::Ray reflectRay(Camera::createPointFromRay(ray, closestIntersect.distAlongRay), ray.dir - 2.0f*glm::dot(ray.dir, closestIntersect.intersectNormal)*closestIntersect.intersectNormal);
-				return lightColor + 0.8*objects[closestIntersect.objectIndex]->material.specular*computePixelColor(reflectRay, scene, ++currentDepth);
+				if (reflections) {
+					return lightColor + 0.8*objects[closestIntersect.objectIndex]->material.specular*computePixelColor(reflectRay, scene, ++currentDepth);
+				}
+				else {
+					return lightColor;
+				}
 			}
 		}
 	}
@@ -313,6 +322,7 @@ int main(int argc, char* argv[]) {
 			Implement shadows
 			Implement reflection
 	*/
+	srand(NULL);
 	Scene scene(testFile);
 	unsigned int w = scene.getWidth();
 	unsigned int h = scene.getHeight();
@@ -320,16 +330,32 @@ int main(int argc, char* argv[]) {
 	std::vector<BYTE> pixels(w*h * 3);
 	scene.backgroundColor = Color(0, 0, 0);
 	Color pixelColor;
-
+	float widthOffset = 0.0f;
+	float heightOffset = 0.0f;
 	std::vector<Shape*> objects = scene.getSceneObjects();
 	Camera cam = scene.getCamera();
 	//std::cout << cam << std::endl;
 	unsigned int total = w * h;
+	time_t startTime = time(0);
+	time_t lastSampleTime = startTime;
+	//time_t sample;
+	struct tm sample = { 0 };
+	sample.tm_sec = sampleTimeInSeconds;
 	for (int i = 0; i < h; i++) {
 		for (int j = 0; j < w; j++) {
 			int current = i * w + j;
-			std::cout << "On pixel " << current << " out of " << total << std::endl;
-			Camera::Ray ray = cam.createRayToPixel(j + 0.5, i + 0.5, w, h);
+			double seconds = difftime(time(NULL), lastSampleTime);
+			if (seconds > sampleTimeInSeconds) {
+				lastSampleTime = time(NULL);
+				float percentComplete = (current / (float)total) * 100.0f;
+				double totalTime = difftime(lastSampleTime, startTime);
+				float estTime = ((float)total - current) / (current / totalTime);
+				std::cout << percentComplete << "% complete. Estimated time: " << estTime << " seconds" << std::endl;
+			}
+			widthOffset = (rand() % 50) / 100.0f;
+			heightOffset = (rand() % 50) / 100.0f;
+			//std::cout << "On pixel " << current << " out of " << total << std::endl;
+			Camera::Ray ray = cam.createRayToPixel(j + widthOffset, i + heightOffset, w, h);
 	/*		Intersection closestIntersect = findClosestIntersection(ray, objects);
 			if (!closestIntersect.isValidIntersection()) {
 				pixelColor = backgroundColor;
