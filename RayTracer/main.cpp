@@ -51,13 +51,6 @@ Color operator*(const Color& color1, const Color& color2) {
 	return Color(color1.r * color2.r, color1.g * color2.g, color1.b * color2.b);
 }
 
-/*Color& operator+=(Color& color1, const Color& color2) {
-	color1.r += color2.r;
-	color1.g += color2.g;
-	color1.b += color2.b;
-	return color1;
-}*/
-
 float calculateDiscriminant(float a, float b, float c) {
 	return glm::pow(b, 2) - (4 * a*c);
 }
@@ -131,69 +124,6 @@ Intersection findClosestIntersection(const Camera::Ray& ray, const std::vector<S
 	return objIntersect;
 }
 
-std::vector<Shape*>& getTestSceneObjects(int scene) {
-	std::vector<Shape*>* outObjects = new std::vector<Shape*>();
-	switch (scene) {
-		case 1: {
-			glm::vec3 v0(-1, -1, 0);
-			glm::vec3 v1(1, -1, 0);
-			glm::vec3 v2(1, 1, 0);
-			glm::vec3 v3(-1, 1, 0);
-			Shape* tri1 = new Shape(v0, v1, v2, Material(Color(0xFF, 0x00, 0x00)));
-			Shape* tri2 = new Shape(v0, v2, v3, Material(Color(0xFF, 0x00, 0x00)));
-			outObjects->push_back(tri1);
-			outObjects->push_back(tri2);
-			break;
-		}
-		default: {
-			Shape* sphere1 = new Shape(glm::vec3(0, 0, -10), 1.0f, Material(Color(0x5c, 0x42, 0xf4)));
-			Shape* sphere2 = new Shape(glm::vec3(1, 0, -7), 1.0f, Material(Color(0xff, 0x42, 0xf4)));
-			Shape* tri1 = new Shape(glm::vec3(-1, 0, -4), glm::vec3(0, 1, -4), glm::vec3(1, 0, -4), Material(Color(0xFF, 0xFF, 0xFF)));
-			Shape* tri2 = new Shape(glm::vec3(0, 2, -3), glm::vec3(0, 3, -3), glm::vec3(1, 2, -3), Material(Color(0x00, 0xFF, 0xFF)));
-			outObjects->push_back(sphere1);
-			outObjects->push_back(sphere2);
-			outObjects->push_back(tri1);
-			outObjects->push_back(tri2);
-			break;
-		}
-	}
-	return *outObjects;
-}
-
-Camera& getTestSceneCamera(int scene, int camera) {
-	Camera* cam;
-	switch (scene) {
-		case 1:
-			switch (camera) {
-				//Angle seems a little strange for cam 3 and cam 1.
-				case 0:
-					cam = new Camera(glm::vec3(0, 0, 4), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), 30);
-					break;
-				case 1:
-					cam = new Camera(glm::vec3(0, -3, 3), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), 30.0f);
-					break;
-				case 2:
-					cam = new Camera(glm::vec3(-4, 0, 1), glm::vec3(0, 0, 1), glm::vec3(0, 0, 1), 45);
-					break;
-				case 3:
-					cam = new Camera(glm::vec3(-4, -4, 4), glm::vec3(1, 0, 0), glm::vec3(0, 1, 0), 30);
-					break;
-				default:
-					//My test camera
-					cam = new Camera(glm::vec3(0, 0, 0), glm::vec3(0, 0, -2), glm::vec3(0, 1, 0), 30);
-					break;
-			}
-			break;
-		default:
-			//My test camera again
-			cam = new Camera(glm::vec3(0, 0, 0), glm::vec3(0, 0, -2), glm::vec3(0, 1, 0), 30);
-			break;
-	}
-	return *cam;
-}
-
-//TODO: Fix these color multiplications and probably +=
-//TODO: Adjust color calculation
 float calculateDiffuseLighting(const glm::vec3& normal, const glm::vec3& objToLightDir) {
 	return std::max(glm::dot(glm::normalize(normal), glm::normalize(objToLightDir)), 0.0f);
 }
@@ -250,13 +180,6 @@ Color calculateLightingColor(const Scene& scene, const glm::vec3& intersectPoint
 			if (debugShadows) {
 				colorFromLights += scene.getSceneObjects()[intersect.objectIndex]->material.diffuse;
 			}
-		/*	if (intersect.objectIndex == 1) {
-				colorFromLights += Color(1.0f, 0.0f, 1.0f);
-			}
-			else {
-				colorFromLights += Color(1.0f, 1.0f, 0.0f);
-			} */
-			//colorFromLights += Color(ray.dir.x, ray.dir.y, ray.dir.z);
 		}
 	}
 	colorFromLights += objMat.diffuse * diffuseLightColor;
@@ -293,35 +216,8 @@ Color computePixelColor(const Camera::Ray& ray, const Scene& scene, int currentD
 		return Color();
 	}
 }
-//TODO: Fix pixel coloring. Implement depth with multiple spheres. Implement materials. Implement triangle ray intersection. Transformations.
 
 int main(int argc, char* argv[]) {
-	/*
-	 DONE Fix pixel coloring. 
-	 DONE Implement depth with multiple spheres. 
-	 Implement materials. 
-	 DONE Implement triangle ray intersection. 
-	 Transformations.
-	 Figure out why camera 2 and 4 looks off in scene1.
-
-		for each pixel
-		DONE	compute ray
-			find interesctions
-			determine color
-		render
-
-		TODO:
-		DONE	Compute rays
-		DONE	Build object intersection for sphere
-		DONE	Build object interesction for triangle
-		DONE	Adapt for multiple objects and depth testing
-		DONE	Transformations
-			Normals and transformed normals (inverse transpose)
-			Implement Lighting
-			Implement file reading
-			Implement shadows
-			Implement reflection
-	*/
 	srand(NULL);
 	Scene scene(testFile);
 	unsigned int w = scene.getWidth();
@@ -334,11 +230,9 @@ int main(int argc, char* argv[]) {
 	float heightOffset = 0.0f;
 	std::vector<Shape*> objects = scene.getSceneObjects();
 	Camera cam = scene.getCamera();
-	//std::cout << cam << std::endl;
 	unsigned int total = w * h;
 	time_t startTime = time(0);
 	time_t lastSampleTime = startTime;
-	//time_t sample;
 	struct tm sample = { 0 };
 	sample.tm_sec = sampleTimeInSeconds;
 	for (int i = 0; i < h; i++) {
@@ -354,23 +248,7 @@ int main(int argc, char* argv[]) {
 			}
 			widthOffset = (rand() % 50) / 100.0f;
 			heightOffset = (rand() % 50) / 100.0f;
-			//std::cout << "On pixel " << current << " out of " << total << std::endl;
 			Camera::Ray ray = cam.createRayToPixel(j + widthOffset, i + heightOffset, w, h);
-	/*		Intersection closestIntersect = findClosestIntersection(ray, objects);
-			if (!closestIntersect.isValidIntersection()) {
-				pixelColor = backgroundColor;
-			}
-			else {
-				//calculate lighting by casting ray to all lights and taking material colors into consideration, if the ray is obscured the pixel is "in shadow" meaning it doesn't take color from that light,
-				//if no lights light the object, it'll be the ambient color
-				//Then cast reflection ray to intersect with another object, pixel being rendered takes on color from that object
-				if (debugIntersect) {
-					pixelColor = Color(1.0f, 0.0f, 0.0f);
-				}
-				else {
-					pixelColor = calculatePixelColor(scene, Camera::createPointFromRay(ray, closestIntersect.distAlongRay), closestIntersect.intersectNormal, objects[closestIntersect.objectIndex]->material);
-				}
-			}*/
 			pixelColor = computePixelColor(ray, scene, 1);
 			pixels[i*w * 3 + j * 3] = pixelColor.getB();
 			pixels[i*w* 3 + (j * 3) + 1] = pixelColor.getG();
