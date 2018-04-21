@@ -9,14 +9,14 @@
 
 
 Scene::Scene(const std::string& fileName){
-	Color diffuse, specular, emission, ambient = Color(0.2f, 0.2f, 0.2f);
+	Color diffuse = Color(0.0f, 0.0f, 0.0f), specular = Color(0.0f, 0.0f,0.0f), emission = Color(0.0f, 0.0f, 0.0f), ambient = Color(0.2f, 0.2f, 0.2f);
 	int numObjects = 0, maxObjects = 200;
 	int numVerts, numVertNorms;
 	glm::vec3 * verts = NULL;
 	glm::vec3 * vertNorms = NULL;
 	int vertIndex = 0;
 	int vertNormIndex = 0;
-	float shininess;
+	float shininess = 0;
 	setDefaults();
 	std::string line, cmd;
 	int numUsed = 0, numLights = 100;
@@ -33,28 +33,18 @@ Scene::Scene(const std::string& fileName){
 				float values[10];
 				bool isValidInput;
 				if (cmd == "directional") {
-					if (numUsed == numLights) { // No more Lights 
-						std::cerr << "Reached Maximum Number of Lights " << numUsed << " Will ignore further lights\n";
-					}
-					else {
 						isValidInput = readvals(s, 6, values);
 						if (isValidInput) {
 							lights.push_back(Light(glm::vec4(values[0], values[1], values[2], 0.0f), Color(values[3], values[4], values[5])));
 							numUsed++;
 						}
-					}
 				}
 				else if (cmd == "point") {
-					if (numUsed == numLights) { // No more Lights 
-						std::cerr << "Reached Maximum Number of Lights " << numUsed << " Will ignore further lights\n";
-					}
-					else {
 						isValidInput = readvals(s, 6, values);
 						if (isValidInput) {
 							lights.push_back(Light(glm::vec4(values[0], values[1], values[2], 1.0f), Color(values[3], values[4], values[5])));
 							numUsed++;
 						}
-					}
 				}
 				else if (cmd == "attenuation") {
 					isValidInput = readvals(s, 3, values);
@@ -150,10 +140,6 @@ Scene::Scene(const std::string& fileName){
 					}
 				}
 				else if (cmd == "sphere" || cmd == "tri" || cmd == "trinormal") {
-					if (numObjects == maxObjects) {
-						std::cerr << "Reached Maximum Number of Objects " << numObjects << " Will ignore further objects\n";
-					}
-					else {
 							Material mat(diffuse, specular, emission, ambient, shininess);
 							Shape* obj;
 							// Set the object's type
@@ -190,7 +176,6 @@ Scene::Scene(const std::string& fileName){
 									++numObjects;
 								}
 							}
-					}
 				}
 				else if (cmd == "translate") {
 					isValidInput = readvals(s, 3, values);

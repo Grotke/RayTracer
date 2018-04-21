@@ -11,11 +11,11 @@
 #include "Camera.h"
 #include "SceneObjects.hpp"
 #include "Scene.h"
-bool debugLight = false;
+bool debugLight = true;
 bool debugShadows = false;
 bool debugIntersect = false;
 bool debugNormals = false;
-std::string testFile = "test_scenes/scene1.test";
+std::string testFile = "final_scenes/scene6_small.test";
 /*
 	Problems Encountered
 		Fovx calculation
@@ -276,7 +276,7 @@ Color computePixelColor(const Camera::Ray& ray, const Scene& scene, int currentD
 			else {
 				Color lightColor = calculateLightingColor(scene, Camera::createPointFromRay(ray, closestIntersect.distAlongRay), closestIntersect.intersectNormal, objects[closestIntersect.objectIndex]->material);
 				Camera::Ray reflectRay(Camera::createPointFromRay(ray, closestIntersect.distAlongRay), ray.dir - 2.0f*glm::dot(ray.dir, closestIntersect.intersectNormal)*closestIntersect.intersectNormal);
-				return lightColor + objects[closestIntersect.objectIndex]->material.specular*computePixelColor(reflectRay, scene, ++currentDepth);
+				return lightColor + 0.8*objects[closestIntersect.objectIndex]->material.specular*computePixelColor(reflectRay, scene, ++currentDepth);
 			}
 		}
 	}
@@ -323,10 +323,12 @@ int main(int argc, char* argv[]) {
 
 	std::vector<Shape*> objects = scene.getSceneObjects();
 	Camera cam = scene.getCamera();
-	std::cout << cam << std::endl;
-	
+	//std::cout << cam << std::endl;
+	unsigned int total = w * h;
 	for (int i = 0; i < h; i++) {
 		for (int j = 0; j < w; j++) {
+			int current = i * w + j;
+			std::cout << "On pixel " << current << " out of " << total << std::endl;
 			Camera::Ray ray = cam.createRayToPixel(j + 0.5, i + 0.5, w, h);
 	/*		Intersection closestIntersect = findClosestIntersection(ray, objects);
 			if (!closestIntersect.isValidIntersection()) {
