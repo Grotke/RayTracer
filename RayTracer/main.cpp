@@ -13,13 +13,36 @@
 #include "Camera.h"
 #include "SceneObjects.hpp"
 #include "Scene.h"
-bool debugLight = false;
-bool debugShadows = false;
-bool debugIntersect = false;
-bool debugNormals = false;
-bool reflections = false;
+
+enum class Debug {
+	DIFFUSE_LIGHT_INTENSITY = 1 ,
+	SPECULAR_LIGHT_INTENSITY = 2,
+	NORMAL_MAP = 4,
+	SHADOW_MAP = 8,
+	PRIMARY_INTERSECTION_MAP = 16
+};
+
+enum class Feature {
+	DIFFUSE_LIGHTING = 1,
+	SPECULAR_LIGHTING = 2,
+	SHADOWS = 4,
+	REFLECTIONS = 8,
+	KEEP_TIME = 16
+};
+
+int featureFlags = (int)Feature::DIFFUSE_LIGHTING | (int)Feature::SPECULAR_LIGHTING | (int)Feature::SHADOWS | (int)Feature::KEEP_TIME;
+int debugFlags = 0;
+
+bool featureIsActive(Feature requestedFeature) {
+	return featureFlags & (int)requestedFeature;
+}
+
+bool debugIsActive(Debug requestedDebug) {
+	return debugFlags & (int)requestedDebug;
+}
+
 double sampleTimeInSeconds = 5.0;
-std::string testFile = "final_scenes/scene6.test";
+std::string testFile = "test_scenes/scene1.test";
 /*
 	Problems Encountered
 		Fovx calculation
@@ -161,31 +184,37 @@ Color calculateLightingColor(const Scene& scene, const glm::vec3& intersectPoint
 		if (!intersect.isValidIntersection()) {
 
 			float atten = calculateLightIntensity(scene.attenuation, distance);
-			float lightPercent = calculateDiffuseLighting(intersectNormal, lightDir);
-			if (debugLight) {
-				colorFromLights += Color(lightPercent, lightPercent, lightPercent);
+			float diffuseLightIntensity = calculateDiffuseLighting(intersectNormal, lightDir);
+			glm::vec3 eyeDir = glm::normalize(scene.getCamera().getEye() - intersectPoint);
+			glm::vec3 halfAngle = glm::normalize(lightDir + eyeDir);
+			float specularLightIntensity = calculateSpecularLighting(objMat, intersectNormal, halfAngle);
+			if (debugIsActive(Debug::DIFFUSE_LIGHT_INTENSITY)) {
+				colorFromLights += Color(diffuseLightIntensity, diffuseLightIntensity, diffuseLightIntensity);
 			}
-			else if (debugNormals) {
+			else if (debugIsActive(Debug::SPECULAR_LIGHT_INTENSITY)) {
+				colorFromLights += Color(specularLightIntensity, specularLightIntensity, specularLightIntensity);
+			}
+			else if (debugIsActive(Debug::NORMAL_MAP)) {
 				colorFromLights += Color(intersectNormal.x, intersectNormal.y, intersectNormal.z);
 			}
 			else {
-				diffuseLightColor += atten * lightPercent * light.color;
-
-				glm::vec3 eyeDir = glm::normalize(scene.getCamera().getEye() - intersectPoint);
-				glm::vec3 halfAngle = glm::normalize(lightDir + eyeDir);
-				specularLightColor += atten * calculateSpecularLighting(objMat, intersectNormal, halfAngle) * light.color;
+				if (featureIsActive(Feature::DIFFUSE_LIGHTING)) {
+					diffuseLightColor += atten * diffuseLightIntensity * light.color;
+				}
+				if (featureIsActive(Feature::SPECULAR_LIGHTING)) {
+					specularLightColor += atten * specularLightIntensity * light.color;
+				}
 			}
 		}
-		else {
-			if (debugShadows) {
+		else if (debugIsActive(Debug::SHADOW_MAP)) {
 				colorFromLights += scene.getSceneObjects()[intersect.objectIndex]->material.diffuse;
-			}
 		}
 	}
 	colorFromLights += objMat.diffuse * diffuseLightColor;
 	colorFromLights += objMat.specular * specularLightColor;
 	return colorFromLights;
 }
+
 Color computePixelColor(const Camera::Ray& ray, const Scene& scene, int currentDepth) {
 	std::vector<Shape*> objects = scene.getSceneObjects();
 	if (currentDepth <= scene.maxDepth) {
@@ -197,13 +226,13 @@ Color computePixelColor(const Camera::Ray& ray, const Scene& scene, int currentD
 			//calculate lighting by casting ray to all lights and taking material colors into consideration, if the ray is obscured the pixel is "in shadow" meaning it doesn't take color from that light,
 			//if no lights light the object, it'll be the ambient color
 			//Then cast reflection ray to intersect with another object, pixel being rendered takes on color from that object
-			if (debugIntersect) {
+			if (debugIsActive(Debug::PRIMARY_INTERSECTION_MAP)) {
 				return Color(1.0f, 0.0f, 0.0f);
 			}
 			else {
 				Color lightColor = calculateLightingColor(scene, Camera::createPointFromRay(ray, closestIntersect.distAlongRay), closestIntersect.intersectNormal, objects[closestIntersect.objectIndex]->material);
 				Camera::Ray reflectRay(Camera::createPointFromRay(ray, closestIntersect.distAlongRay), ray.dir - 2.0f*glm::dot(ray.dir, closestIntersect.intersectNormal)*closestIntersect.intersectNormal);
-				if (reflections) {
+				if (featureIsActive(Feature::REFLECTIONS)) {
 					return lightColor + 0.8*objects[closestIntersect.objectIndex]->material.specular*computePixelColor(reflectRay, scene, ++currentDepth);
 				}
 				else {
@@ -238,13 +267,15 @@ int main(int argc, char* argv[]) {
 	for (int i = 0; i < h; i++) {
 		for (int j = 0; j < w; j++) {
 			int current = i * w + j;
-			double seconds = difftime(time(NULL), lastSampleTime);
-			if (seconds > sampleTimeInSeconds) {
-				lastSampleTime = time(NULL);
-				float percentComplete = (current / (float)total) * 100.0f;
-				double totalTime = difftime(lastSampleTime, startTime);
-				float estTime = ((float)total - current) / (current / totalTime);
-				std::cout << percentComplete << "% complete. Estimated time: " << estTime << " seconds" << std::endl;
+			if (featureIsActive(Feature::KEEP_TIME)) {
+				double seconds = difftime(time(NULL), lastSampleTime);
+				if (seconds > sampleTimeInSeconds) {
+					lastSampleTime = time(NULL);
+					float percentComplete = (current / (float)total) * 100.0f;
+					double totalTime = difftime(lastSampleTime, startTime);
+					float estTime = ((float)total - current) / (current / totalTime);
+					std::cout << percentComplete << "% complete. Estimated time: " << estTime << " seconds" << std::endl;
+				}
 			}
 			widthOffset = (rand() % 50) / 100.0f;
 			heightOffset = (rand() % 50) / 100.0f;
