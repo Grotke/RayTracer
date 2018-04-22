@@ -146,7 +146,7 @@ Scene::Scene(const std::string& fileName){
 				else if (cmd == "sphere" || cmd == "tri" || cmd == "trinormal") {
 							Material mat(diffuse, specular, emission, ambient, shininess);
 							Shape* obj;
-							// Set the object's type
+
 							if (cmd == "sphere") {
 								isValidInput = readvals(s, 4, values);
 								if (isValidInput) {

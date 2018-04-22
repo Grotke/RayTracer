@@ -5,11 +5,6 @@
 struct Color {
 	float r, g, b;
 	int min = 0, max = 255;
-	/*Color(int inR, int inG, int inB) {
-		r = glm::clamp(inR, min, max);
-		g = glm::clamp(inG, min, max);
-		b = glm::clamp(inB, min, max);
-	}*/
 	Color(float inR, float inG, float inB) : r(inR), g(inG), b(inB) {
 	}
 
@@ -87,14 +82,12 @@ struct Light {
 };
 
 struct Intersection {
-	//Could use a really big number but it's theoretically possible that the intersect 
-	//could be very large so I'm using a negative number which should never occur naturally
 	float distAlongRay = std::numeric_limits<float>::infinity();
 	int objectIndex = -1;
 	glm::vec3 intersectNormal;
 	bool isValidIntersection() {
 		return !glm::isinf(distAlongRay);
-	}//return glm::epsilonNotEqual(distAlongRay, -1.0f,0.001f) && glm::epsilonNotEqual(distAlongRay, 0.0f, 0.1f); }
+	}
 	Intersection(float distAlongRay, int objectIndex = -1): distAlongRay(distAlongRay), objectIndex(objectIndex) {}
 	Intersection(float distAlongRay, const glm::vec3& normal) : distAlongRay(distAlongRay), intersectNormal(glm::normalize(normal)) {}
 	Intersection(){}
