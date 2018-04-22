@@ -5,14 +5,14 @@ PERFORMANCE REPORT FOR debug_normalsscene1.test.png
 
 Input Scene File: test_scenes/scene1.test
 Output Image: debug_renders/debug_normalsscene1.test.png
-Resolution: 320x240
-Pixels Processed: 76800
+Resolution: 640x480
+Pixels Processed: 307200
 
 Features Enabled: diffuse specular reporting time shadows
 Debug Options: normals
 
-Render Time: 19 hours 00 minutes 24 seconds
-Milliseconds Per Pixel: 0.3125
+Render Time: 19 hours 01 minutes 16 seconds
+Milliseconds Per Pixel: 0.247396
 
 Total objects: 5
 -----Spheres: 3

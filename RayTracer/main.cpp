@@ -377,8 +377,8 @@ void createRender(const SceneMetaData& sceneFileData, std::string outputFileName
 					std::cout << percentComplete << "% complete. Estimated time: " << estTime << " seconds" << std::endl;
 				}
 			}
-			widthOffset = (rand() % 50) / 100.0f;
-			heightOffset = (rand() % 50) / 100.0f;
+			widthOffset = 0.5f;
+			heightOffset = 0.5f;
 			Camera::Ray ray = cam.createRayToPixel(j + widthOffset, i + heightOffset, w, h);
 			pixelColor = computePixelColor(ray, scene, 1);
 			pixels[i*w * 3 + j * 3] = pixelColor.getB();

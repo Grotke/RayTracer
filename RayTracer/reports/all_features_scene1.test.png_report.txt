@@ -5,14 +5,14 @@ PERFORMANCE REPORT FOR all_features_scene1.test.png
 
 Input Scene File: test_scenes/scene1.test
 Output Image: renders/all_features_scene1.test.png
-Resolution: 320x240
-Pixels Processed: 76800
+Resolution: 640x480
+Pixels Processed: 307200
 
 Features Enabled: diffuse specular reporting time reflections shadows
 Debug Options: none
 
-Render Time: 19 hours 00 minutes 32 seconds
-Milliseconds Per Pixel: 0.416667
+Render Time: 19 hours 01 minutes 29 seconds
+Milliseconds Per Pixel: 0.289714
 
 Total objects: 5
 -----Spheres: 3
