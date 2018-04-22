@@ -1,0 +1,22 @@
+PERFORMANCE REPORT FOR diffuse_only_scene1.test.png
+--------------------------------------------------------------------
+
+100% Completed
+
+Input Scene File: test_scenes/scene1.test
+Output Image: renders/diffuse_only_scene1.test.png
+Resolution: 320x240
+Pixels Processed: 76800
+
+Features Enabled: diffuse reporting time
+Debug Options: none
+
+Render Time: 19 hours 00 minutes 24 seconds
+Milliseconds Per Pixel: 0.3125
+
+Total objects: 5
+-----Spheres: 3
+-----Triangles: 2
+Total lights: 1
+-----Directional: 1
+-----Point: 0

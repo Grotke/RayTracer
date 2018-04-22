@@ -6,7 +6,11 @@
 #include "Scene.h"
 #include "Transform.h"
 
-
+void Scene::setDefaults() {
+	attenuation = glm::vec3(1.0f, 0.0f, 0.0f);
+	maxDepth = 5;
+	outputFileName = "test.png";
+}
 
 Scene::Scene(const std::string& fileName){
 	Color diffuse = Color(0.0f, 0.0f, 0.0f), specular = Color(0.0f, 0.0f,0.0f), emission = Color(0.0f, 0.0f, 0.0f), ambient = Color(0.2f, 0.2f, 0.2f);
@@ -36,14 +40,14 @@ Scene::Scene(const std::string& fileName){
 						isValidInput = readvals(s, 6, values);
 						if (isValidInput) {
 							lights.push_back(Light(glm::vec4(values[0], values[1], values[2], 0.0f), Color(values[3], values[4], values[5])));
-							numUsed++;
+							numDirectionalLights++;
 						}
 				}
 				else if (cmd == "point") {
 						isValidInput = readvals(s, 6, values);
 						if (isValidInput) {
 							lights.push_back(Light(glm::vec4(values[0], values[1], values[2], 1.0f), Color(values[3], values[4], values[5])));
-							numUsed++;
+							numPointLights++;
 						}
 				}
 				else if (cmd == "attenuation") {
@@ -149,7 +153,7 @@ Scene::Scene(const std::string& fileName){
 									obj = new Shape(glm::vec3(values[0], values[1], values[2]), values[3], mat);
 									obj->transform = transfstack.top();
 									objects.push_back(obj);
-									++numObjects;
+									numSpheres++;
 								}
 							}
 							else if (cmd == "tri") {
@@ -159,7 +163,7 @@ Scene::Scene(const std::string& fileName){
 									obj->transform = transfstack.top();
 									obj->transformVerts();
 									objects.push_back(obj);
-									++numObjects;
+									numTriangles++;
 								}
 							}
 							else if (cmd == "trinormal") {
@@ -173,7 +177,7 @@ Scene::Scene(const std::string& fileName){
 									obj->transformVerts();
 									obj->transformNorms();
 									objects.push_back(obj);
-									++numObjects;
+									numTriangles++;
 								}
 							}
 				}
@@ -212,11 +216,11 @@ Scene::Scene(const std::string& fileName){
 			}
 				std::getline(inFile, line);
 			}
+			isLoaded = true;
 	}else{
+		isLoaded = false;
 		std::cout << "Unable to open file " << fileName << std::endl;
-		exit(1);
 	}
-
 }
 
 
@@ -236,12 +240,6 @@ bool Scene::readvals(std::stringstream &s, int numvals, float* values)
 	return true;
 }
   
-
-void Scene::setDefaults() {
-	attenuation = glm::vec3(1.0f, 0.0f, 0.0f);
-	maxDepth = 5;
-	outputFileName = "test.png";
-}
 
 const Camera& Scene::getCamera() const {
 	return cam;
@@ -265,4 +263,32 @@ const unsigned int Scene::getHeight() const {
 
 const std::vector<Light>& Scene::getLights() const {
 	return lights;
+}
+
+int Scene::getNumObjects() const {
+	return objects.size();
+}
+
+int Scene::getNumSpheres() const {
+	return numSpheres;
+}
+
+int Scene::getNumTriangles() const {
+	return numTriangles;
+}
+
+int Scene::getNumLights() const {
+	return numPointLights + numDirectionalLights;
+}
+
+int Scene::getNumDirectionalLights() const {
+	return numDirectionalLights;
+}
+
+int Scene::getNumPointLights() const {
+	return numPointLights;
+}
+
+bool Scene::loaded() const {
+	return isLoaded;
 }

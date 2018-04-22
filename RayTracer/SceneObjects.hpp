@@ -99,3 +99,9 @@ struct Intersection {
 	Intersection(float distAlongRay, const glm::vec3& normal) : distAlongRay(distAlongRay), intersectNormal(glm::normalize(normal)) {}
 	Intersection(){}
 };
+
+struct SceneMetaData {
+	std::string filePath;
+	std::string sceneTitle;
+	SceneMetaData(const std::string& filePath, const std::string& sceneTitle) : filePath(filePath), sceneTitle(sceneTitle) {}
+};

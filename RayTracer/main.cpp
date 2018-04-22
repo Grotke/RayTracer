@@ -1,9 +1,13 @@
 #include <iostream>
+#include <fstream>
 #include <algorithm>
 #include <vector>
 #include <stack>
 #include <stdlib.h>
 #include <time.h>
+#include <unordered_map>
+#include <windows.h>
+#include "Shlwapi.h"
 
 #include "FreeImage.h"
 #include <glm/glm.hpp>
@@ -14,12 +18,22 @@
 #include "SceneObjects.hpp"
 #include "Scene.h"
 
+#pragma comment(lib, "Shlwapi.lib")
+
+
+SceneMetaData createSceneMetaData(const std::string& sceneFilePath) {
+	SceneMetaData metaData(sceneFilePath, PathFindFileName(sceneFilePath.c_str()));
+	return metaData;
+}
+
 enum class Debug {
-	DIFFUSE_LIGHT_INTENSITY = 1 ,
-	SPECULAR_LIGHT_INTENSITY = 2,
-	NORMAL_MAP = 4,
-	SHADOW_MAP = 8,
-	PRIMARY_INTERSECTION_MAP = 16
+	//Debug flags aren't assigned numbers to make them easier to iterate through
+	DIFFUSE_LIGHT_INTENSITY,
+	SPECULAR_LIGHT_INTENSITY,
+	NORMAL_MAP,
+	SHADOW_MAP,
+	PRIMARY_INTERSECTION_MAP,
+	NONE //NONE should be last to make iterating through these debugs easier since loops will stop on NONE
 };
 
 enum class Feature {
@@ -27,22 +41,62 @@ enum class Feature {
 	SPECULAR_LIGHTING = 2,
 	SHADOWS = 4,
 	REFLECTIONS = 8,
-	KEEP_TIME = 16
+	KEEP_TIME = 16,
+	REPORT_PERFORMANCE = 32
 };
 
-int featureFlags = (int)Feature::DIFFUSE_LIGHTING | (int)Feature::SPECULAR_LIGHTING | (int)Feature::SHADOWS | (int)Feature::KEEP_TIME;
-int debugFlags = 0;
+enum class Mode {
+	BENCHMARK,
+	NONE
+};
+
+std::unordered_map<Debug, std::string> debugNames({ { Debug::DIFFUSE_LIGHT_INTENSITY, "diffuse_intensity" },{ Debug::SPECULAR_LIGHT_INTENSITY, "specular_intensity" },{ Debug::NORMAL_MAP, "normals" },{ Debug::PRIMARY_INTERSECTION_MAP, "primary_intersect" },{ Debug::SHADOW_MAP, "shadow_intersect" },{ Debug::NONE, "none" } });
+std::unordered_map<Feature, std::string> featureNames({ { Feature::DIFFUSE_LIGHTING, "diffuse" }, {Feature::SPECULAR_LIGHTING, "specular"}, {Feature::REFLECTIONS, "reflections"}, {Feature::SHADOWS, "shadows"},{ Feature::KEEP_TIME, "time" },{ Feature::REPORT_PERFORMANCE, "reporting" } });
+int featureFlags = (int)Feature::DIFFUSE_LIGHTING | (int)Feature::SPECULAR_LIGHTING | (int)Feature::SHADOWS | (int)Feature::KEEP_TIME | (int)Feature::REPORT_PERFORMANCE;
+Debug debugFlag = Debug::NONE;
+Mode currentMode = Mode::NONE;
+
+void removeFeature(Feature feature) {
+	featureFlags ^= (int)feature;
+}
+
+void addFeature(Feature feature) {
+	featureFlags |= (int)feature;
+}
 
 bool featureIsActive(Feature requestedFeature) {
 	return featureFlags & (int)requestedFeature;
 }
 
 bool debugIsActive(Debug requestedDebug) {
-	return debugFlags & (int)requestedDebug;
+	return debugFlag == requestedDebug;
+}
+
+std::string getEnabledFeaturesAsString() {
+	std::string featureStr;
+	for (auto &feature : featureNames) {
+		if (featureIsActive(feature.first)) {
+			if (featureStr.empty()) {
+				featureStr += feature.second;
+			}
+			else {
+				featureStr += " " + feature.second;
+			}
+		}
+	}
+	return featureStr;
+}
+
+std::string getEnabledDebugAsString() {
+	return debugNames.find(debugFlag)->second;
 }
 
 double sampleTimeInSeconds = 5.0;
-std::string testFile = "test_scenes/scene1.test";
+std::string testScenesDirectory = "test_scenes/";
+std::string reportDirectory = "reports/";
+std::string renderDirectory = "renders/";
+std::string debugRenderDirectory = "debug_renders/";
+std::string testFile = "scene1.test";
 /*
 	Problems Encountered
 		Fovx calculation
@@ -181,7 +235,7 @@ Color calculateLightingColor(const Scene& scene, const glm::vec3& intersectPoint
 		Camera::Ray ray(intersectPoint, lightRayDir);
 		Intersection intersect = findClosestIntersection(ray, scene.getSceneObjects());
 		//Differentiate directional and point lights when calculating ray direction
-		if (!intersect.isValidIntersection()) {
+		if (!intersect.isValidIntersection() || !featureIsActive(Feature::SHADOWS)) {
 
 			float atten = calculateLightIntensity(scene.attenuation, distance);
 			float diffuseLightIntensity = calculateDiffuseLighting(intersectNormal, lightDir);
@@ -246,9 +300,53 @@ Color computePixelColor(const Camera::Ray& ray, const Scene& scene, int currentD
 	}
 }
 
-int main(int argc, char* argv[]) {
+void createPerformanceReport(const SceneMetaData& metaData, const std::string& outputFileName, const Scene& scene, const time_t& totalTimeInSeconds, int pixelsProcessed) {
+	std::ofstream report;
+	SceneMetaData outputMeta=createSceneMetaData(outputFileName);
+	report.open(reportDirectory + outputMeta.sceneTitle + "_report.txt");
+	if (currentMode == Mode::BENCHMARK) {
+		report << "BENCHMARK RUN: MAY HAVE EXITED BEFORE COMPLETELY RENDERING" << std::endl;
+	}
+	report << "PERFORMANCE REPORT FOR " << outputMeta.sceneTitle << std::endl;
+	report << "--------------------------------------------------------------------" << std::endl << std::endl;
+	report << std::min((int)((pixelsProcessed / (float)scene.getWidth() * scene.getHeight()) * 100), 100) << "% Completed" << std::endl << std::endl;
+	report << "Input Scene File: " << metaData.filePath << std::endl;
+	report << "Output Image: " << outputFileName << std::endl;
+	report << "Resolution: " << scene.getWidth() << "x" << scene.getHeight() << std::endl;
+	report << "Pixels Processed: " << pixelsProcessed << std::endl << std::endl;
+	report << "Features Enabled: " << getEnabledFeaturesAsString() << std::endl;
+	report << "Debug Options: " << getEnabledDebugAsString() << std::endl << std::endl;
+	char buffer[80];
+	struct tm timeInfo = { 0 };
+	localtime_s(&timeInfo, &totalTimeInSeconds);
+	strftime(buffer, 80, "%H hours %M minutes %S seconds", &timeInfo);
+	report << "Render Time: " << buffer << std::endl;
+	report << "Milliseconds Per Pixel: " << totalTimeInSeconds * 1000 / (float)pixelsProcessed << std::endl << std::endl;
+	report << "Total objects: " << scene.getNumObjects() << std::endl;
+	report << "-----Spheres: " << scene.getNumSpheres() << std::endl;
+	report << "-----Triangles: " << scene.getNumTriangles() << std::endl;
+	report << "Total lights: " << scene.getNumLights() << std::endl;
+	report << "-----Directional: " << scene.getNumDirectionalLights() << std::endl;
+	report << "-----Point: " << scene.getNumPointLights() << std::endl;
+	report.close();
+}
+
+void createRender(const SceneMetaData& sceneFileData, std::string outputFileName="") {
+	std::string testFilePath = sceneFileData.filePath;
 	srand(NULL);
-	Scene scene(testFile);
+	Scene scene(testFilePath);
+	if (!scene.loaded()) {
+		std::cout << "Couldn't load scene. Is the file path correct? " << testFilePath << std::endl;
+		std::cin.get();
+		exit(1);
+	}
+	if (outputFileName.empty()) {
+		outputFileName = scene.getOutputFileName();
+	}
+	else {
+		outputFileName += ".png";
+	}
+
 	unsigned int w = scene.getWidth();
 	unsigned int h = scene.getHeight();
 
@@ -260,20 +358,22 @@ int main(int argc, char* argv[]) {
 	std::vector<Shape*> objects = scene.getSceneObjects();
 	Camera cam = scene.getCamera();
 	unsigned int total = w * h;
-	time_t startTime = time(0);
+	time_t startTime = time(NULL);
 	time_t lastSampleTime = startTime;
+	double benchmarkTimeLimit = 60.0f*60.0f*30.0f; //30 minutes
 	struct tm sample = { 0 };
 	sample.tm_sec = sampleTimeInSeconds;
+	int currentPixel;
 	for (int i = 0; i < h; i++) {
 		for (int j = 0; j < w; j++) {
-			int current = i * w + j;
+			currentPixel = i * w + j;
 			if (featureIsActive(Feature::KEEP_TIME)) {
 				double seconds = difftime(time(NULL), lastSampleTime);
 				if (seconds > sampleTimeInSeconds) {
 					lastSampleTime = time(NULL);
-					float percentComplete = (current / (float)total) * 100.0f;
+					float percentComplete = (currentPixel / (float)total) * 100.0f;
 					double totalTime = difftime(lastSampleTime, startTime);
-					float estTime = ((float)total - current) / (current / totalTime);
+					float estTime = ((float)total - currentPixel) / (currentPixel / totalTime);
 					std::cout << percentComplete << "% complete. Estimated time: " << estTime << " seconds" << std::endl;
 				}
 			}
@@ -282,14 +382,77 @@ int main(int argc, char* argv[]) {
 			Camera::Ray ray = cam.createRayToPixel(j + widthOffset, i + heightOffset, w, h);
 			pixelColor = computePixelColor(ray, scene, 1);
 			pixels[i*w * 3 + j * 3] = pixelColor.getB();
-			pixels[i*w* 3 + (j * 3) + 1] = pixelColor.getG();
-			pixels[i*w* 3 + (j * 3) + 2] = pixelColor.getR();
+			pixels[i*w * 3 + (j * 3) + 1] = pixelColor.getG();
+			pixels[i*w * 3 + (j * 3) + 2] = pixelColor.getR();
+		}
+		if (currentMode == Mode::BENCHMARK) {
+			if (difftime(time(NULL), startTime) > benchmarkTimeLimit) {
+				break;
+			}
 		}
 	}
+	++currentPixel;
+	if (currentPixel == w * h) {
+		Renderer render(w, h);
+		BYTE * outPixels = &pixels[0];
+		render.createImage(outPixels, outputFileName);
+	}
+	if (featureIsActive(Feature::REPORT_PERFORMANCE)) {
+		time_t totalTime = time(NULL) - startTime;
+		createPerformanceReport(sceneFileData, outputFileName, scene, totalTime, currentPixel);
+	}
+}
 
-	Renderer render(w, h);
-	BYTE * outPixels = &pixels[0];
-	render.createImage(outPixels, scene.getOutputFileName());
+void createAllDebugRendersForScene(const SceneMetaData& metaData) {
+	for (int flag = 1; flag != (int)Debug::NONE; flag++) {
+		debugFlag = (Debug)flag;
+		createRender(metaData, debugRenderDirectory+"debug_"+debugNames.find(debugFlag)->second+metaData.sceneTitle);
+	}
+}
+
+void createAllFeatureRendersForScene(const SceneMetaData& metaData) {
+	debugFlag = Debug::NONE;
+	featureFlags = (int)Feature::KEEP_TIME | (int)Feature::REPORT_PERFORMANCE;
+	addFeature(Feature::DIFFUSE_LIGHTING);
+	createRender(metaData, renderDirectory+"diffuse_only_" + metaData.sceneTitle);
+	addFeature(Feature::SPECULAR_LIGHTING);
+	createRender(metaData, renderDirectory+"no_shadows_" + metaData.sceneTitle);
+	addFeature(Feature::SHADOWS);
+	createRender(metaData, renderDirectory+"full_phong_" + metaData.sceneTitle);
+	removeFeature(Feature::SHADOWS);
+	addFeature(Feature::REFLECTIONS);
+	createRender(metaData, renderDirectory+"reflections_no_shadows_" + metaData.sceneTitle);
+	addFeature(Feature::SHADOWS);
+	createRender(metaData, renderDirectory+"all_features_" + metaData.sceneTitle);
+}
+
+void createAllRendersForScene(const SceneMetaData& metaData) {
+	createAllDebugRendersForScene(metaData);
+	createAllFeatureRendersForScene(metaData);
+}
+
+void createAllFeatureRendersForScene(const std::string& sceneFile) {
+	SceneMetaData metaData = createSceneMetaData(sceneFile);
+	createAllFeatureRendersForScene(metaData);
+}
+
+void createAllDebugRendersForScene(const std::string& sceneFile) {
+	SceneMetaData metaData = createSceneMetaData(sceneFile);
+	createAllDebugRendersForScene(metaData);
+}
+
+void createAllRendersForScene(const std::string& sceneFile) {
+	SceneMetaData metaData = createSceneMetaData(sceneFile);
+	createAllRendersForScene(metaData);
+}
+
+
+
+int main(int argc, char* argv[]) {
+	SceneMetaData metaData = createSceneMetaData("test_scenes/scene1.test");
+	//createRender(metaData);
+	createAllRendersForScene(metaData);
+	std::cout << "Finished Rendering" << std::endl;
 	std::cin.get();
 	return 0;
 }
