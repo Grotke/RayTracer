@@ -1,0 +1,22 @@
+PERFORMANCE REPORT FOR debug_primary_intersectscene3_light.test.png
+--------------------------------------------------------------------
+
+100% Completed
+
+Input Scene File: test_scenes/scene3_light.test
+Output Image: debug_renders/debug_primary_intersectscene3_light.test.png
+Resolution: 640x480
+Pixels Processed: 307200
+
+Features Enabled: diffuse specular reporting time shadows
+Debug Options: primary_intersect
+
+Render Time: 19 hours 02 minutes 22 seconds
+Milliseconds Per Pixel: 0.46224
+
+Total objects: 66
+-----Spheres: 6
+-----Triangles: 60
+Total lights: 1
+-----Directional: 1
+-----Point: 0

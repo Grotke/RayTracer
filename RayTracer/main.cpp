@@ -404,7 +404,7 @@ void createRender(const SceneMetaData& sceneFileData, std::string outputFileName
 }
 
 void createAllDebugRendersForScene(const SceneMetaData& metaData) {
-	for (int flag = 1; flag != (int)Debug::NONE; flag++) {
+	for (int flag = 0; flag != (int)Debug::NONE; flag++) {
 		debugFlag = (Debug)flag;
 		createRender(metaData, debugRenderDirectory+"debug_"+debugNames.find(debugFlag)->second+metaData.sceneTitle);
 	}
@@ -449,7 +449,7 @@ void createAllRendersForScene(const std::string& sceneFile) {
 
 
 int main(int argc, char* argv[]) {
-	SceneMetaData metaData = createSceneMetaData("test_scenes/scene1.test");
+	SceneMetaData metaData = createSceneMetaData("test_scenes/scene3_light.test");
 	//createRender(metaData);
 	createAllRendersForScene(metaData);
 	std::cout << "Finished Rendering" << std::endl;

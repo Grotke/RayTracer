@@ -1,0 +1,22 @@
+PERFORMANCE REPORT FOR all_features_scene3_light.test.png
+--------------------------------------------------------------------
+
+100% Completed
+
+Input Scene File: test_scenes/scene3_light.test
+Output Image: renders/all_features_scene3_light.test.png
+Resolution: 640x480
+Pixels Processed: 307200
+
+Features Enabled: diffuse specular reporting time reflections shadows
+Debug Options: none
+
+Render Time: 19 hours 05 minutes 26 seconds
+Milliseconds Per Pixel: 1.0612
+
+Total objects: 66
+-----Spheres: 6
+-----Triangles: 60
+Total lights: 1
+-----Directional: 1
+-----Point: 0
