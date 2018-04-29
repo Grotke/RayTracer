@@ -15,7 +15,7 @@ Camera::~Camera()
 {
 }
 
-Camera::Ray Camera::createRayToPixel(float i, float j, int width, int height) const {
+Ray Camera::createRayToPixel(float i, float j, int width, int height) const {
 	glm::vec3 w = -glm::normalize(forward);
 	glm::vec3 u = glm::normalize(glm::cross(up, w));
 	glm::vec3 v = glm::normalize(glm::cross(w, u));
@@ -26,7 +26,7 @@ Camera::Ray Camera::createRayToPixel(float i, float j, int width, int height) co
 	return Ray(lookFrom, rayDir);
 }
 
-glm::vec3 Camera::createPointFromRay(Ray ray, float t) {
+glm::vec3 Camera::createPointFromRay(const Ray& ray, float t) {
 	return ray.origin + ray.dir*t;
 }
 

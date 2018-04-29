@@ -5,6 +5,7 @@
 
 #include "SceneObjects.hpp"
 #include "Camera.h"
+#include "Partition.h"
 
 class Scene
 {
@@ -15,7 +16,7 @@ class Scene
 		void setDefaults();
 
 		const Camera& getCamera() const;
-		const std::vector<Shape*>& getSceneObjects() const;
+		const std::vector<Shape *>& getSceneObjects() const;
 		const std::string& getOutputFileName() const;
 		const unsigned int getWidth() const;
 		const unsigned int getHeight() const;
@@ -30,8 +31,10 @@ class Scene
 		glm::vec3 attenuation;
 		int maxDepth;
 		Color backgroundColor;
+		Intersection findClosestIntersection(const Ray& ray) const;
 
 	private:
+		Partition* objectTree;
 		Camera cam;
 		bool isLoaded;
 		std::vector<Light> lights;

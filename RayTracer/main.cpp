@@ -5,6 +5,7 @@
 #include <stack>
 #include <stdlib.h>
 #include <time.h>
+#include <chrono>
 #include <unordered_map>
 #include <windows.h>
 #include "Shlwapi.h"
@@ -19,6 +20,7 @@
 #include "Scene.h"
 
 #pragma comment(lib, "Shlwapi.lib")
+
 
 
 SceneMetaData createSceneMetaData(const std::string& sceneFilePath) {
@@ -54,7 +56,11 @@ std::unordered_map<Debug, std::string> debugNames({ { Debug::DIFFUSE_LIGHT_INTEN
 std::unordered_map<Feature, std::string> featureNames({ { Feature::DIFFUSE_LIGHTING, "diffuse" }, {Feature::SPECULAR_LIGHTING, "specular"}, {Feature::REFLECTIONS, "reflections"}, {Feature::SHADOWS, "shadows"},{ Feature::KEEP_TIME, "time" },{ Feature::REPORT_PERFORMANCE, "reporting" } });
 int featureFlags = (int)Feature::DIFFUSE_LIGHTING | (int)Feature::SPECULAR_LIGHTING | (int)Feature::SHADOWS | (int)Feature::KEEP_TIME | (int)Feature::REPORT_PERFORMANCE;
 Debug debugFlag = Debug::NONE;
-Mode currentMode = Mode::NONE;
+Mode currentMode = Mode::BENCHMARK;
+//spheres, triangles, file reading, shadow calculations, reflection calculations, pixel color calculations
+bool modeIs(Mode mode) {
+	return currentMode == mode;
+}
 
 void removeFeature(Feature feature) {
 	featureFlags ^= (int)feature;
@@ -128,78 +134,6 @@ Color operator*(const Color& color1, const Color& color2) {
 	return Color(color1.r * color2.r, color1.g * color2.g, color1.b * color2.b);
 }
 
-float calculateDiscriminant(float a, float b, float c) {
-	return glm::pow(b, 2) - (4 * a*c);
-}
-
-Intersection intersectTriangle(const Camera::Ray& ray, const Shape& tri) {
-	glm::vec3 e1 = tri.v3 - tri.v2;
-	glm::vec3 e2 = tri.v1 - tri.v3;
-	glm::vec3 e3 = tri.v2 - tri.v1;
-	glm::vec3 planeNormal = glm::cross(e1, e2);
-	if (!glm::epsilonEqual(glm::dot(ray.dir, planeNormal), 0.0f, 0.01f)) {
-		float d = glm::dot(tri.v1, planeNormal);
-		float t = (d - glm::dot(ray.origin, planeNormal)) / glm::dot(ray.dir, planeNormal);
-		if (t < 0.005f) {
-			return Intersection();
-		}
-		glm::vec3 P = ray.origin + t*ray.dir;
-		glm::vec3 d1 = P - tri.v1;
-		glm::vec3 d2 = P - tri.v2;
-		glm::vec3 d3 = P - tri.v3;
-		float totalArea = glm::dot(glm::cross(e1, e2), planeNormal) / 2;
-		bool b0 = (glm::dot(glm::cross(e1, d3), planeNormal)/2 / totalArea) >= 0;
-		bool b1 = (glm::dot(glm::cross(e2, d1), planeNormal)/2 / totalArea) >= 0;
-		bool b2 = (glm::dot(glm::cross(e3, d2), planeNormal)/2 / totalArea) >= 0;
-		if (b0 && b1 && b2) {
-			return Intersection(glm::distance(P, ray.origin), planeNormal);
-		}
-	}
-	return Intersection();
-}
-
-Intersection intersectSphere(const Camera::Ray& rawRay, const Shape& object) {
-	Camera::Ray ray(glm::inverse(object.transform) * glm::vec4(rawRay.origin, 1.0f), glm::normalize(glm::inverse(object.transform) * glm::vec4(rawRay.dir, 0.0f)));
-	float a = glm::dot(ray.dir, ray.dir);
-	float b = 2.0f * glm::dot(ray.dir, (ray.origin - object.center));
-	float c = glm::dot((ray.origin - object.center), (ray.origin - object.center)) - glm::pow(object.radius, 2.0f);
-	float discrim = calculateDiscriminant(a, b, c);
-	if (discrim < 0.0f) {
-		return Intersection();
-	}
-	float x1 = (-b + glm::sqrt(discrim)) / 2.0f * a;
-	float x2 = (-b - glm::sqrt(discrim)) / 2.0f * a;
-	float t = std::min(x1, x2);
-	if (t < 0.005f) {
-		//One is negative so return the maximum number which should be positive
-		return Intersection();
-	}
-	glm::vec3 transfPoint = ray.origin + ray.dir * t;
-	glm::vec3 normal = glm::transpose(glm::inverse(object.transform)) * glm::vec4(transfPoint - object.center, 0.0f);
-
-	glm::vec3 finalPoint = object.transform * glm::vec4(transfPoint, 1.0f);
-	return Intersection(glm::distance(finalPoint, rawRay.origin), normal);
-}
-
-Intersection intersect(const Camera::Ray& ray, const Shape& object) {
-	if (object.isTriangle) {
-		return intersectTriangle(ray, object);
-	}
-	return intersectSphere(ray, object);
-}
-
-Intersection findClosestIntersection(const Camera::Ray& ray, const std::vector<Shape*>& objects) {
-	Intersection objIntersect;
-
-	for (int i = 0; i < objects.size(); i++) {
-		Intersection currentIntersect = intersect(ray, *objects[i]);
-		if (currentIntersect.isValidIntersection()&& (currentIntersect.distAlongRay < objIntersect.distAlongRay || !objIntersect.isValidIntersection())) {
-			objIntersect = currentIntersect;
-			objIntersect.objectIndex = i;
-		}
-	}
-	return objIntersect;
-}
 
 float calculateDiffuseLighting(const glm::vec3& normal, const glm::vec3& objToLightDir) {
 	return std::max(glm::dot(glm::normalize(normal), glm::normalize(objToLightDir)), 0.0f);
@@ -232,8 +166,8 @@ Color calculateLightingColor(const Scene& scene, const glm::vec3& intersectPoint
 			lightDir = -glm::vec3(light.location);
 			distance = 0.0f;
 		}
-		Camera::Ray ray(intersectPoint, lightRayDir);
-		Intersection intersect = findClosestIntersection(ray, scene.getSceneObjects());
+		Ray ray(intersectPoint, lightRayDir);
+		Intersection intersect = scene.findClosestIntersection(ray);
 		//Differentiate directional and point lights when calculating ray direction
 		if (!intersect.isValidIntersection() || !featureIsActive(Feature::SHADOWS)) {
 
@@ -269,10 +203,9 @@ Color calculateLightingColor(const Scene& scene, const glm::vec3& intersectPoint
 	return colorFromLights;
 }
 
-Color computePixelColor(const Camera::Ray& ray, const Scene& scene, int currentDepth) {
-	std::vector<Shape*> objects = scene.getSceneObjects();
+Color computePixelColor(const Ray& ray, const Scene& scene, int currentDepth) {
 	if (currentDepth <= scene.maxDepth) {
-		Intersection closestIntersect = findClosestIntersection(ray, objects);
+		Intersection closestIntersect = scene.findClosestIntersection(ray);
 		if (!closestIntersect.isValidIntersection()) {
 			return scene.backgroundColor;
 		}
@@ -284,8 +217,9 @@ Color computePixelColor(const Camera::Ray& ray, const Scene& scene, int currentD
 				return Color(1.0f, 0.0f, 0.0f);
 			}
 			else {
+				std::vector<Shape*> objects = scene.getSceneObjects();
 				Color lightColor = calculateLightingColor(scene, Camera::createPointFromRay(ray, closestIntersect.distAlongRay), closestIntersect.intersectNormal, objects[closestIntersect.objectIndex]->material);
-				Camera::Ray reflectRay(Camera::createPointFromRay(ray, closestIntersect.distAlongRay), ray.dir - 2.0f*glm::dot(ray.dir, closestIntersect.intersectNormal)*closestIntersect.intersectNormal);
+				Ray reflectRay(Camera::createPointFromRay(ray, closestIntersect.distAlongRay), ray.dir - 2.0f*glm::dot(ray.dir, closestIntersect.intersectNormal)*closestIntersect.intersectNormal);
 				if (featureIsActive(Feature::REFLECTIONS)) {
 					return lightColor + 0.8*objects[closestIntersect.objectIndex]->material.specular*computePixelColor(reflectRay, scene, ++currentDepth);
 				}
@@ -322,12 +256,13 @@ void createPerformanceReport(const SceneMetaData& metaData, const std::string& o
 	strftime(buffer, 80, "%H hours %M minutes %S seconds", &timeInfo);
 	report << "Render Time: " << buffer << std::endl;
 	report << "Milliseconds Per Pixel: " << totalTimeInSeconds * 1000 / (float)pixelsProcessed << std::endl << std::endl;
+	report << "Time Breakdown" << std::endl;
 	report << "Total objects: " << scene.getNumObjects() << std::endl;
-	report << "-----Spheres: " << scene.getNumSpheres() << std::endl;
-	report << "-----Triangles: " << scene.getNumTriangles() << std::endl;
+	report << "----- Spheres: " << scene.getNumSpheres() << std::endl;
+	report << "----- Triangles: " << scene.getNumTriangles() << std::endl;
 	report << "Total lights: " << scene.getNumLights() << std::endl;
-	report << "-----Directional: " << scene.getNumDirectionalLights() << std::endl;
-	report << "-----Point: " << scene.getNumPointLights() << std::endl;
+	report << "----- Directional: " << scene.getNumDirectionalLights() << std::endl;
+	report << "----- Point: " << scene.getNumPointLights() << std::endl;
 	report.close();
 }
 
@@ -355,7 +290,7 @@ void createRender(const SceneMetaData& sceneFileData, std::string outputFileName
 	Color pixelColor;
 	float widthOffset = 0.0f;
 	float heightOffset = 0.0f;
-	std::vector<Shape*> objects = scene.getSceneObjects();
+	std::vector<Shape *> objects = scene.getSceneObjects();
 	Camera cam = scene.getCamera();
 	unsigned int total = w * h;
 	time_t startTime = time(NULL);
@@ -379,13 +314,13 @@ void createRender(const SceneMetaData& sceneFileData, std::string outputFileName
 			}
 			widthOffset = 0.5f;
 			heightOffset = 0.5f;
-			Camera::Ray ray = cam.createRayToPixel(j + widthOffset, i + heightOffset, w, h);
+			Ray ray = cam.createRayToPixel(j + widthOffset, i + heightOffset, w, h);
 			pixelColor = computePixelColor(ray, scene, 1);
 			pixels[i*w * 3 + j * 3] = pixelColor.getB();
 			pixels[i*w * 3 + (j * 3) + 1] = pixelColor.getG();
 			pixels[i*w * 3 + (j * 3) + 2] = pixelColor.getR();
 		}
-		if (currentMode == Mode::BENCHMARK) {
+		if (modeIs(Mode::BENCHMARK)) {
 			if (difftime(time(NULL), startTime) > benchmarkTimeLimit) {
 				break;
 			}
@@ -449,9 +384,9 @@ void createAllRendersForScene(const std::string& sceneFile) {
 
 
 int main(int argc, char* argv[]) {
-	SceneMetaData metaData = createSceneMetaData("test_scenes/scene3_light.test");
-	//createRender(metaData);
-	createAllRendersForScene(metaData);
+	SceneMetaData metaData = createSceneMetaData("final_scenes/scene5.test");
+	createRender(metaData);
+	//createAllRendersForScene(metaData);
 	std::cout << "Finished Rendering" << std::endl;
 	std::cin.get();
 	return 0;

@@ -217,6 +217,7 @@ Scene::Scene(const std::string& fileName){
 				std::getline(inFile, line);
 			}
 			isLoaded = true;
+			objectTree = new Partition(objects);
 	}else{
 		isLoaded = false;
 		std::cout << "Unable to open file " << fileName << std::endl;
@@ -245,7 +246,7 @@ const Camera& Scene::getCamera() const {
 	return cam;
 }
 
-const std::vector<Shape*>& Scene::getSceneObjects() const {
+const std::vector<Shape *>& Scene::getSceneObjects() const {
 	return objects;
 }
 
@@ -291,4 +292,8 @@ int Scene::getNumPointLights() const {
 
 bool Scene::loaded() const {
 	return isLoaded;
+}
+
+Intersection Scene::findClosestIntersection(const Ray& ray) const {
+	return objectTree->findClosestintersection(ray);
 }
