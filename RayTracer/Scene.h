@@ -6,6 +6,9 @@
 #include "SceneObjects.hpp"
 #include "Camera.h"
 #include "Partition.h"
+#include "Shape.h"
+#include "Sphere.h"
+#include "Triangle.h"
 
 class Scene
 {

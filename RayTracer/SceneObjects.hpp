@@ -4,8 +4,8 @@
 #include <limits>
 #include <cmath>
 #include <algorithm>
-#include "Camera.h"
 #include "Color.h"
+#include <string>
 
 struct Ray {
 	Ray(const glm::vec3& org, const glm::vec3& dir) : origin(org), dir(glm::normalize(dir)) {}

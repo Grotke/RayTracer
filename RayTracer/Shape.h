@@ -1,8 +1,7 @@
 #pragma once
 #include <glm/glm.hpp>
 #include "SceneObjects.hpp"
-#include "AABB.h"
-
+class AABB;
 class Shape
 {
 public:
@@ -17,6 +16,7 @@ public:
 	virtual float getMaxZ() const;
 	virtual bool isInside(const AABB& box) const;
 	virtual Intersection intersect(const Ray& ray) const;
+	const Material& getMaterial() const;
 
 protected:
 	glm::mat4 transform;

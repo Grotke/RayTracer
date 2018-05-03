@@ -2,6 +2,8 @@
 #include <vector>
 #include "SceneObjects.hpp"
 #include "Camera.h"
+#include "Shape.h"
+#include "AABB.h"
 
 class Partition
 {

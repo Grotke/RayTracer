@@ -1,9 +1,10 @@
 #include "Sphere.h"
 #include <algorithm>
+#include "AABB.h"
 
 
 
-Sphere::Sphere(const glm::vec3& center, float radius, const glm::mat4& transform, const Material& mat): Shape(inTransform, mat), center(center), radius(radius), transform(transform), material(mat){
+Sphere::Sphere(const glm::vec3& center, float radius, const glm::mat4& transform, const Material& mat): Shape(transform, mat), center(center), radius(radius){
 
 }
 
@@ -34,9 +35,11 @@ float Sphere::getMaxZ() const {
 }
 
 bool Sphere::isInside(const AABB& box) const {
-	float x = std::max(box.min.x, std::min(center.x, box.max.x));
-	float y = std::max(box.min.y, std::min(center.y, box.max.y));
-	float z = std::max(box.min.z, std::min(center.z, box.max.z));
+	glm::vec3 boxMin = box.getMin();
+	glm::vec3 boxMax = box.getMax();
+	float x = std::max(boxMin.x, std::min(center.x, boxMax.x));
+	float y = std::max(boxMin.y, std::min(center.y, boxMax.y));
+	float z = std::max(boxMin.z, std::min(center.z, boxMax.z));
 
 	// this is the same as isPointInsideSphere
 	float distance = std::sqrt((x - center.x) * (x - center.x) +
@@ -47,7 +50,7 @@ bool Sphere::isInside(const AABB& box) const {
 	return box.contains(center) || box.contains(glm::normalize(box.getMidPoint() - center) * radius + center) || radius > glm::length(box.getMidPoint() - center) || distance < radius;
 }
 
-bool Sphere::intersect(const Ray& ray) const {
+Intersection Sphere::intersect(const Ray& rawRay) const {
 	Ray ray(glm::inverse(transform) * glm::vec4(rawRay.origin, 1.0f), glm::normalize(glm::inverse(transform) * glm::vec4(rawRay.dir, 0.0f)));
 	float a = glm::dot(ray.dir, ray.dir);
 	float b = 2.0f * glm::dot(ray.dir, (ray.origin - center));

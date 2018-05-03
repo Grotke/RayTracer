@@ -150,8 +150,7 @@ Scene::Scene(const std::string& fileName){
 							if (cmd == "sphere") {
 								isValidInput = readvals(s, 4, values);
 								if (isValidInput) {
-									obj = new Shape(glm::vec3(values[0], values[1], values[2]), values[3], mat);
-									obj->transform = transfstack.top();
+									obj = new Sphere(glm::vec3(values[0], values[1], values[2]), values[3], transfstack.top(), mat);
 									objects.push_back(obj);
 									numSpheres++;
 								}
@@ -159,9 +158,7 @@ Scene::Scene(const std::string& fileName){
 							else if (cmd == "tri") {
 								isValidInput = readvals(s, 3, values);
 								if (isValidInput) {
-									obj = new Shape(verts[(int)values[0]], verts[(int)values[1]], verts[(int)values[2]], mat);
-									obj->transform = transfstack.top();
-									obj->transformVerts();
+									obj = new Triangle(verts[(int)values[0]], verts[(int)values[1]], verts[(int)values[2]], transfstack.top(), mat);
 									objects.push_back(obj);
 									numTriangles++;
 								}
@@ -169,13 +166,7 @@ Scene::Scene(const std::string& fileName){
 							else if (cmd == "trinormal") {
 								isValidInput = readvals(s, 6, values);
 								if (isValidInput) {
-									obj = new Shape(vertNorms[(int)values[0]], vertNorms[(int)values[2]], vertNorms[(int)values[4]], mat);
-									obj->n1 = vertNorms[(int)values[1]];
-									obj->n2 = vertNorms[(int)values[3]];
-									obj->n3 = vertNorms[(int)values[5]];
-									obj->transform = transfstack.top();
-									obj->transformVerts();
-									obj->transformNorms();
+									obj = new Triangle(vertNorms[(int)values[0]], vertNorms[(int)values[2]], vertNorms[(int)values[4]], transfstack.top(), mat, vertNorms[(int)values[1]], vertNorms[(int)values[3]], vertNorms[(int)values[5]]);
 									objects.push_back(obj);
 									numTriangles++;
 								}
@@ -223,7 +214,6 @@ Scene::Scene(const std::string& fileName){
 		std::cout << "Unable to open file " << fileName << std::endl;
 	}
 }
-
 
 Scene::~Scene()
 {

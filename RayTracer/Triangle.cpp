@@ -1,4 +1,5 @@
 #include "Triangle.h"
+#include "AABB.h"
 #include <algorithm>
 #include <glm/gtc/epsilon.hpp>
 
@@ -19,6 +20,17 @@ Triangle::Triangle(const glm::vec3& inV1, const glm::vec3& inV2, const glm::vec3
 
 Triangle::~Triangle()
 {
+}
+
+Triangle::Triangle(const glm::vec3& inV1, const glm::vec3& inV2, const glm::vec3& inV3, const glm::mat4& inTransform, const Material& mat) :Shape(inTransform, mat) {
+	v1 = transform * glm::vec4(inV1, 1.0f);
+	v2 = transform * glm::vec4(inV2, 1.0f);
+	v3 = transform * glm::vec4(inV3, 1.0f);
+	glm::mat4 inverseTranspose = glm::inverse(glm::transpose(transform));
+	glm::vec3 planeNormal = calculatePlaneNormal();
+	n1 = inverseTranspose * glm::vec4(planeNormal, 0.0f);
+	n2 = inverseTranspose * glm::vec4(planeNormal, 0.0f);
+	n3 = inverseTranspose * glm::vec4(planeNormal, 0.0f);
 }
 
 float Triangle::getMinX() const {
@@ -81,8 +93,8 @@ bool Triangle::isInside(const AABB& box) const {
 }
 
 bool Triangle::OverlapOnAxis(const AABB& box, const glm::vec3& axis) const {
-	glm::vec2 a = GetInterval(aabb, axis);
-	glm::vec2 b = GetInterval(triangle, axis);
+	glm::vec2 a = GetInterval(box, axis);
+	glm::vec2 b = GetInterval(axis);
 	return ((b.x <= a.y) && (a.x <= b.y));
 }
 
@@ -104,8 +116,8 @@ glm::vec2 Triangle::GetInterval(const glm::vec3& axis) const {
 }
 
 glm::vec2 Triangle::GetInterval(const AABB& aabb, const glm::vec3& axis) const {
-	glm::vec3 i = aabb.min;
-	glm::vec3 a = aabb.max;
+	glm::vec3 i = aabb.getMin();
+	glm::vec3 a = aabb.getMax();
 
 	glm::vec3 vertex[8] = {
 		glm::vec3(i.x, a.y, a.z),
@@ -134,7 +146,7 @@ Intersection Triangle::intersect(const Ray& ray) const {
 	glm::vec3 e1 = v3 - v2;
 	glm::vec3 e2 = v1 - v3;
 	glm::vec3 e3 = v2 - v1;
-	glm::vec3 planeNormal = glm::cross(e1, e2);
+	glm::vec3 planeNormal = calculatePlaneNormal();
 	if (!glm::epsilonEqual(glm::dot(ray.dir, planeNormal), 0.0f, 0.01f)) {
 		float d = glm::dot(v1, planeNormal);
 		float t = (d - glm::dot(ray.origin, planeNormal)) / glm::dot(ray.dir, planeNormal);
@@ -154,4 +166,8 @@ Intersection Triangle::intersect(const Ray& ray) const {
 		}
 	}
 	return Intersection();
+}
+
+glm::vec3 Triangle::calculatePlaneNormal() const {
+	return glm::cross(v3 - v2, v1 - v3);
 }

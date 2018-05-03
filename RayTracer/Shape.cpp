@@ -1,4 +1,5 @@
 #include "Shape.h"
+#include "AABB.h"
 
 
 
@@ -38,4 +39,8 @@ bool Shape::isInside(const AABB& box) const {
 
 Intersection Shape::intersect(const Ray& ray) const {
 	return Intersection();
+}
+
+const Material& Shape::getMaterial() const {
+	return material;
 }

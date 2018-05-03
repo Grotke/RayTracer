@@ -5,6 +5,7 @@ class Triangle :
 {
 public:
 	Triangle(const glm::vec3& inV1, const glm::vec3& inV2, const glm::vec3& inV3, const glm::mat4& inTransform, const Material& mat, const glm::vec3& inN1, const glm::vec3& inN2, const glm::vec3& inN3);
+	Triangle(const glm::vec3& inV1, const glm::vec3& inV2, const glm::vec3& inV3, const glm::mat4& inTransform, const Material& mat);
 	virtual ~Triangle();
 	virtual float getMinX() const override;
 	virtual float getMinY() const override;
@@ -21,5 +22,6 @@ private:
 	bool OverlapOnAxis(const AABB& aabb, const glm::vec3& axis) const;
 	glm::vec2 GetInterval(const AABB& aabb, const glm::vec3& axis) const;
 	glm::vec2 GetInterval(const glm::vec3& axis) const;
+	glm::vec3 calculatePlaneNormal() const;
 };
 

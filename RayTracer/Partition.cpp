@@ -24,7 +24,7 @@ Intersection Partition::findClosestintersection(const Ray& ray) const {
 }
 
 Intersection Partition::intersect(const Ray& ray, const PartitionNode const * currentNode) const {
-	if (currentNode == nullptr || !currentNode->box.intersect(ray)) {
+	if (currentNode == nullptr || !currentNode->box.intersect(ray).isValidIntersection()) {
 		return Intersection();
 	}
 	if (currentNode->isLeaf()) {

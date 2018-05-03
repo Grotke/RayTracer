@@ -12,9 +12,16 @@ AABB::AABB() {
 
 }
 
-
 AABB::~AABB()
 {
+}
+
+glm::vec3 AABB::getMin() const {
+	return min;
+}
+
+glm::vec3 AABB::getMax() const {
+	return max;
 }
 
 float AABB::getMinX() const {
@@ -88,6 +95,10 @@ Intersection AABB::intersect(const Ray& ray) const {
 		}
 	}
 	return Intersection(t_result, normal);
+}
+
+bool AABB::contains(const Shape& obj) const {
+	return obj.isInside(*this);
 }
 
 bool AABB::contains(const glm::vec3& point) const {

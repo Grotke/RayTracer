@@ -18,6 +18,7 @@
 #include "Camera.h"
 #include "SceneObjects.hpp"
 #include "Scene.h"
+#include "Shape.h"
 
 #pragma comment(lib, "Shlwapi.lib")
 
@@ -122,18 +123,9 @@ std::ostream& operator<<(std::ostream &strm, const Camera &cam) {
 	return strm << "Camera(lookAt: " << cam.lookAt << " lookFrom: " << cam.lookFrom << " up: " << cam.up << " forward: " << cam.forward << " fov: " << cam.fovy << ")";
 }
 
-Color operator*(const Color& color, float x) {
-	return Color(color.r * x, color.g * x, color.b * x);
-}
-
 Color operator*(float x, const Color& color) {
 	return color * x;
 }
-
-Color operator*(const Color& color1, const Color& color2) {
-	return Color(color1.r * color2.r, color1.g * color2.g, color1.b * color2.b);
-}
-
 
 float calculateDiffuseLighting(const glm::vec3& normal, const glm::vec3& objToLightDir) {
 	return std::max(glm::dot(glm::normalize(normal), glm::normalize(objToLightDir)), 0.0f);
@@ -195,7 +187,7 @@ Color calculateLightingColor(const Scene& scene, const glm::vec3& intersectPoint
 			}
 		}
 		else if (debugIsActive(Debug::SHADOW_MAP)) {
-				colorFromLights += scene.getSceneObjects()[intersect.objectIndex]->material.diffuse;
+				colorFromLights += scene.getSceneObjects()[intersect.objectIndex]->getMaterial().diffuse;
 		}
 	}
 	colorFromLights += objMat.diffuse * diffuseLightColor;
@@ -218,10 +210,10 @@ Color computePixelColor(const Ray& ray, const Scene& scene, int currentDepth) {
 			}
 			else {
 				std::vector<Shape*> objects = scene.getSceneObjects();
-				Color lightColor = calculateLightingColor(scene, Camera::createPointFromRay(ray, closestIntersect.distAlongRay), closestIntersect.intersectNormal, objects[closestIntersect.objectIndex]->material);
+				Color lightColor = calculateLightingColor(scene, Camera::createPointFromRay(ray, closestIntersect.distAlongRay), closestIntersect.intersectNormal, objects[closestIntersect.objectIndex]->getMaterial());
 				Ray reflectRay(Camera::createPointFromRay(ray, closestIntersect.distAlongRay), ray.dir - 2.0f*glm::dot(ray.dir, closestIntersect.intersectNormal)*closestIntersect.intersectNormal);
 				if (featureIsActive(Feature::REFLECTIONS)) {
-					return lightColor + 0.8*objects[closestIntersect.objectIndex]->material.specular*computePixelColor(reflectRay, scene, ++currentDepth);
+					return lightColor + 0.8*objects[closestIntersect.objectIndex]->getMaterial().specular*computePixelColor(reflectRay, scene, ++currentDepth);
 				}
 				else {
 					return lightColor;
