@@ -14,7 +14,7 @@ public:
 	Intersection findClosestintersection(const Ray& ray) const;
 
 private:
-	float splitThreshold = 0.5;
+	int splitThreshold = 5;
 	struct PartitionNode {
 		int parentObjectCount;
 		AABB box;

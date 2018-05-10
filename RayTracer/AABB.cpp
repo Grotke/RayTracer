@@ -117,7 +117,7 @@ AABB::Axis AABB::getLongestAxis() const {
 }
 
 glm::vec3 AABB::getMidPoint() const {
-	return max - min / 2.0f;
+	return (max - min) / 2.0f;
 }
 
 AABB AABB::splitLeft() const {

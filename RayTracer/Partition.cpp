@@ -1,4 +1,5 @@
 #include "Partition.h"
+#include <algorithm>
 
 
 
@@ -8,10 +9,12 @@ Partition::Partition(const std::vector<Shape*>& objects)
 	for (Shape* obj : objects) {
 		box.expand(*obj);
 	}
+	splitThreshold = std::min(splitThreshold, std::max((int)(0.1f * objects.size()), 1));
 	root = new PartitionNode(box, objects.size());
 	for (Shape* obj : objects) {
 		insert(obj, root);
 	}
+	split(root);
 }
 
 
@@ -45,14 +48,10 @@ Intersection Partition::intersect(const Ray& ray, const PartitionNode const * cu
 }
 
 void Partition::insert(Shape* obj, PartitionNode* nodeToInsert) {
-	if (nodeToInsert->isLeaf()) {
+	if (nodeToInsert->isLeaf() && nodeToInsert->box.contains(*obj)) {
 		nodeToInsert->objects.push_back(obj);
 		//if the node pushes the partition above a threshold (50% of objects parents are in this node)
 		//What happens if only one object? ie Quickly reach threshold and no way to go below it?
-		if (nodeToInsert->objects.size() / (float)nodeToInsert->parentObjectCount > splitThreshold) {
-			//TODO: check splitting options, this way splits every time it splits basically
-			split(nodeToInsert);
-		}
 	}
 	else {
 		//Object might be in both left and right so checking here.
@@ -70,18 +69,23 @@ void Partition::insert(Shape*obj) {
 }
 
 void Partition::split(PartitionNode* nodeToSplit) {
-	if (nodeToSplit != nullptr && nodeToSplit->left == nullptr && nodeToSplit->right == nullptr) {
+	if (nodeToSplit != nullptr && nodeToSplit->isLeaf() && nodeToSplit->objects.size() > splitThreshold) {
 		nodeToSplit->left = new PartitionNode(nodeToSplit->box.splitLeft(), nodeToSplit->objects.size());
 		nodeToSplit->right = new PartitionNode(nodeToSplit->box.splitRight(), nodeToSplit->objects.size());
 		for (Shape* obj : nodeToSplit->objects) {
 			insert(obj, nodeToSplit->left);
 			insert(obj, nodeToSplit->right);
-			if (nodeToSplit->left->isEmpty() && !nodeToSplit->right->isEmpty()) {
-				nodeToSplit->left = nodeToSplit->right;
-			}
-			else if (nodeToSplit->right->isEmpty() && !nodeToSplit->left->isEmpty()) {
-				nodeToSplit->right = nodeToSplit->left;
-			}
 		}
+
+		if (nodeToSplit->left->isEmpty() && !nodeToSplit->right->isEmpty()) {
+			delete nodeToSplit->left;
+			nodeToSplit->left = nullptr;
+		}
+		else if (nodeToSplit->right->isEmpty() && !nodeToSplit->left->isEmpty()) {
+			delete nodeToSplit->right;
+			nodeToSplit->right = nullptr;
+		}
+		split(nodeToSplit->left);
+		split(nodeToSplit->right);
 	}
 }
