@@ -1,0 +1,24 @@
+BENCHMARK RUN: MAY HAVE EXITED BEFORE COMPLETELY RENDERING
+PERFORMANCE REPORT FOR scene5.png
+--------------------------------------------------------------------
+
+100% Completed
+
+Input Scene File: final_scenes/scene5.test
+Output Image: scene5.png
+Resolution: 640x480
+Pixels Processed: 307200
+
+Features Enabled: diffuse specular reporting time shadows
+Debug Options: none
+
+Render Time: 19 hours 06 minutes 47 seconds
+Milliseconds Per Pixel: 1.32487
+
+Time Breakdown
+Total objects: 1000
+----- Spheres: 1000
+----- Triangles: 0
+Total lights: 2
+----- Directional: 1
+----- Point: 1

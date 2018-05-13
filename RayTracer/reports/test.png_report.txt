@@ -9,11 +9,11 @@ Output Image: test.png
 Resolution: 320x240
 Pixels Processed: 76800
 
-Features Enabled: diffuse specular reporting time shadows
+Features Enabled: diffuse specular reporting time reflections shadows
 Debug Options: none
 
-Render Time: 19 hours 00 minutes 31 seconds
-Milliseconds Per Pixel: 0.403646
+Render Time: 19 hours 01 minutes 07 seconds
+Milliseconds Per Pixel: 0.872396
 
 Time Breakdown
 Total objects: 66

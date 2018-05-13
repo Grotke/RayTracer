@@ -55,7 +55,7 @@ enum class Mode {
 
 std::unordered_map<Debug, std::string> debugNames({ { Debug::DIFFUSE_LIGHT_INTENSITY, "diffuse_intensity" },{ Debug::SPECULAR_LIGHT_INTENSITY, "specular_intensity" },{ Debug::NORMAL_MAP, "normals" },{ Debug::PRIMARY_INTERSECTION_MAP, "primary_intersect" },{ Debug::SHADOW_MAP, "shadow_intersect" },{ Debug::NONE, "none" } });
 std::unordered_map<Feature, std::string> featureNames({ { Feature::DIFFUSE_LIGHTING, "diffuse" }, {Feature::SPECULAR_LIGHTING, "specular"}, {Feature::REFLECTIONS, "reflections"}, {Feature::SHADOWS, "shadows"},{ Feature::KEEP_TIME, "time" },{ Feature::REPORT_PERFORMANCE, "reporting" } });
-int featureFlags = (int)Feature::DIFFUSE_LIGHTING | (int)Feature::SPECULAR_LIGHTING | (int)Feature::SHADOWS | (int)Feature::KEEP_TIME | (int)Feature::REPORT_PERFORMANCE;
+int featureFlags = (int)Feature::DIFFUSE_LIGHTING | (int)Feature::SPECULAR_LIGHTING | (int)Feature::SHADOWS | (int)Feature::KEEP_TIME | (int)Feature::REPORT_PERFORMANCE | (int) Feature::REFLECTIONS;
 Debug debugFlag = Debug::NONE;
 Mode currentMode = Mode::BENCHMARK;
 //spheres, triangles, file reading, shadow calculations, reflection calculations, pixel color calculations
@@ -187,7 +187,7 @@ Color calculateLightingColor(const Scene& scene, const glm::vec3& intersectPoint
 			}
 		}
 		else if (debugIsActive(Debug::SHADOW_MAP)) {
-				colorFromLights += scene.getSceneObjects()[intersect.objectIndex]->getMaterial().diffuse;
+				colorFromLights += intersect.mat.diffuse;
 		}
 	}
 	colorFromLights += objMat.diffuse * diffuseLightColor;
@@ -210,10 +210,10 @@ Color computePixelColor(const Ray& ray, const Scene& scene, int currentDepth) {
 			}
 			else {
 				std::vector<Shape*> objects = scene.getSceneObjects();
-				Color lightColor = calculateLightingColor(scene, Camera::createPointFromRay(ray, closestIntersect.distAlongRay), closestIntersect.intersectNormal, objects[closestIntersect.objectIndex]->getMaterial());
+				Color lightColor = calculateLightingColor(scene, Camera::createPointFromRay(ray, closestIntersect.distAlongRay), closestIntersect.intersectNormal, closestIntersect.mat);
 				Ray reflectRay(Camera::createPointFromRay(ray, closestIntersect.distAlongRay), ray.dir - 2.0f*glm::dot(ray.dir, closestIntersect.intersectNormal)*closestIntersect.intersectNormal);
 				if (featureIsActive(Feature::REFLECTIONS)) {
-					return lightColor + 0.8*objects[closestIntersect.objectIndex]->getMaterial().specular*computePixelColor(reflectRay, scene, ++currentDepth);
+					return lightColor + 0.8*closestIntersect.mat.specular*computePixelColor(reflectRay, scene, ++currentDepth);
 				}
 				else {
 					return lightColor;
@@ -373,6 +373,10 @@ void createAllRendersForScene(const std::string& sceneFile) {
 	createAllRendersForScene(metaData);
 }
 
+void runTests() {
+	AABB box(glm::vec3(-1.0f,-1.0f, -1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+	
+}
 
 
 int main(int argc, char* argv[]) {

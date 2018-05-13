@@ -14,29 +14,36 @@ Sphere::~Sphere()
 }
 
 float Sphere::getMinX() const {
-	return center.x - radius;
+	float x = (transform * glm::vec4(center.x - radius, 0.0f, 0.0f, 1.0f)).x;
+	return x;
 }
 float Sphere::getMinY() const {
-	return center.y - radius;
+	float y = (transform * glm::vec4(0.0f, center.y - radius, 0.0f, 1.0f)).y;
+	return y;
 }
 float Sphere::getMinZ() const {
-	return center.z - radius;
+	float z = (transform * glm::vec4(0.0f, 0.0f, center.z -radius, 1.0f)).z;
+	return z;
 }
+
 float Sphere::getMaxX() const {
-	return center.x + radius;
+	float x = (transform * glm::vec4(center.x + radius, 0.0f, 0.0f, 1.0f)).x;
+	return x;
 }
 
 float Sphere::getMaxY() const {
-	return center.y + radius;
+	float y = (transform * glm::vec4(0.0f, center.y + radius, 0.0f, 1.0f)).y;
+	return y;
 }
 
 float Sphere::getMaxZ() const {
-	return center.z + radius;
+	float z = (transform * glm::vec4(0.0f, 0.0f, center.z + radius, 1.0f)).z;
+	return z;
 }
 
 bool Sphere::isInside(const AABB& box) const {
-	glm::vec3 boxMin = box.getMin();
-	glm::vec3 boxMax = box.getMax();
+	glm::vec3 boxMin = glm::inverse(transform)*glm::vec4(box.getMin(), 1.0f);
+	glm::vec3 boxMax = glm::inverse(transform)*glm::vec4(box.getMax(), 1.0f);
 	float x = std::max(boxMin.x, std::min(center.x, boxMax.x));
 	float y = std::max(boxMin.y, std::min(center.y, boxMax.y));
 	float z = std::max(boxMin.z, std::min(center.z, boxMax.z));
@@ -45,9 +52,9 @@ bool Sphere::isInside(const AABB& box) const {
 	float distance = std::sqrt((x - center.x) * (x - center.x) +
 		(y - center.y) * (y - center.y) +
 		(z - center.z) * (z - center.z));
-
+	//box.contains(glm::normalize(box.getMidPoint() - center) * radius + center)
 	//https://developer.mozilla.org/en-US/docs/Games/Techniques/3D_collision_detection says doesn't work when only colliding on face
-	return box.contains(center) || box.contains(glm::normalize(box.getMidPoint() - center) * radius + center) || radius > glm::length(box.getMidPoint() - center) || distance < radius;
+	return box.contains(center) || distance < radius;
 }
 
 Intersection Sphere::intersect(const Ray& rawRay) const {

@@ -30,12 +30,12 @@ struct Light {
 
 struct Intersection {
 	float distAlongRay = std::numeric_limits<float>::infinity();
-	int objectIndex = -1;
+	Material mat;
 	glm::vec3 intersectNormal;
 	bool isValidIntersection() const {
 		return !glm::isinf(distAlongRay);
 	}
-	Intersection(float distAlongRay, int objectIndex = -1): distAlongRay(distAlongRay), objectIndex(objectIndex) {}
+	Intersection(float distAlongRay): distAlongRay(distAlongRay){}
 	Intersection(float distAlongRay, const glm::vec3& normal) : distAlongRay(distAlongRay), intersectNormal(glm::normalize(normal)) {}
 	Intersection(){}
 };

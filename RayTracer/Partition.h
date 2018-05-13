@@ -14,7 +14,7 @@ public:
 	Intersection findClosestintersection(const Ray& ray) const;
 
 private:
-	int splitThreshold = 5;
+	float splitThreshold = 0.5f;
 	struct PartitionNode {
 		int parentObjectCount;
 		AABB box;
@@ -35,7 +35,7 @@ private:
 				Intersection currentIntersect = objects[i]->intersect(ray);
 				if (currentIntersect.isValidIntersection() && (currentIntersect.distAlongRay < objIntersect.distAlongRay || !objIntersect.isValidIntersection())) {
 					objIntersect = currentIntersect;
-					objIntersect.objectIndex = i;
+					objIntersect.mat = objects[i]->getMaterial();
 				}
 			}
 			return objIntersect;
@@ -44,8 +44,8 @@ private:
 		}
 		PartitionNode(const AABB& box, int parentObjectCount) : box(box), parentObjectCount(parentObjectCount) {}
 	};
-	void split(PartitionNode* nodeToSplit);
-	void insert(Shape* object, PartitionNode* nodeToInsert);
+	void split(PartitionNode* nodeToSplit, int prevMatches);
+	bool insert(Shape* object, PartitionNode* nodeToInsert);
 	Intersection intersect(const Ray& ray, const PartitionNode const * currentNode) const;
 	PartitionNode* root;
 };

@@ -1,0 +1,24 @@
+BENCHMARK RUN: MAY HAVE EXITED BEFORE COMPLETELY RENDERING
+PERFORMANCE REPORT FOR scene7.png
+--------------------------------------------------------------------
+
+100% Completed
+
+Input Scene File: final_scenes/scene7.test
+Output Image: scene7.png
+Resolution: 640x480
+Pixels Processed: 307200
+
+Features Enabled: diffuse specular reporting time reflections shadows
+Debug Options: none
+
+Render Time: 19 hours 04 minutes 46 seconds
+Milliseconds Per Pixel: 0.93099
+
+Time Breakdown
+Total objects: 100000
+----- Spheres: 0
+----- Triangles: 100000
+Total lights: 1
+----- Directional: 0
+----- Point: 1
