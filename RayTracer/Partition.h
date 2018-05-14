@@ -30,12 +30,12 @@ private:
 		Intersection findClosestIntersection(const Ray& ray) const {
 			Intersection objIntersect;
 
-			for (int i = 0; i < objects.size(); i++) {
+			for (Shape* obj: objects) {
 				//I don't know why, but when I had a const reference to Ray it wouldn't let me do a *this so I changed it to use pointers instead
-				Intersection currentIntersect = objects[i]->intersect(ray);
+				Intersection currentIntersect = obj->intersect(ray);
 				if (currentIntersect.isValidIntersection() && (currentIntersect.distAlongRay < objIntersect.distAlongRay || !objIntersect.isValidIntersection())) {
 					objIntersect = currentIntersect;
-					objIntersect.mat = objects[i]->getMaterial();
+					objIntersect.mat = obj->getMaterial();
 				}
 			}
 			return objIntersect;

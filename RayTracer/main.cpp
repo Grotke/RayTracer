@@ -59,23 +59,23 @@ int featureFlags = (int)Feature::DIFFUSE_LIGHTING | (int)Feature::SPECULAR_LIGHT
 Debug debugFlag = Debug::NONE;
 Mode currentMode = Mode::BENCHMARK;
 //spheres, triangles, file reading, shadow calculations, reflection calculations, pixel color calculations
-bool modeIs(Mode mode) {
+inline bool modeIs(Mode mode) {
 	return currentMode == mode;
 }
 
-void removeFeature(Feature feature) {
+inline void removeFeature(Feature feature) {
 	featureFlags ^= (int)feature;
 }
 
-void addFeature(Feature feature) {
+inline void addFeature(Feature feature) {
 	featureFlags |= (int)feature;
 }
 
-bool featureIsActive(Feature requestedFeature) {
+inline bool featureIsActive(Feature requestedFeature) {
 	return featureFlags & (int)requestedFeature;
 }
 
-bool debugIsActive(Debug requestedDebug) {
+inline bool debugIsActive(Debug requestedDebug) {
 	return debugFlag == requestedDebug;
 }
 
@@ -136,7 +136,7 @@ float calculateSpecularLighting(const Material& objMat, const glm::vec3& normal,
 }
 
 float calculateLightIntensity(const glm::vec3& attenuation, float distance) {
-	return attenuation.x + attenuation.y*distance + attenuation.z*glm::pow(distance, 2.0f);
+	return 1.0f/(attenuation.x + attenuation.y*distance + attenuation.z*glm::pow(distance, 2.0f));
 }
 
 Color calculateLightingColor(const Scene& scene, const glm::vec3& intersectPoint, const glm::vec3& intersectNormal, const Material& objMat) {
@@ -148,22 +148,24 @@ Color calculateLightingColor(const Scene& scene, const glm::vec3& intersectPoint
 		glm::vec3 lightRayDir;
 		glm::vec3 lightDir;
 		float distance;
+		float atten;
 		if (light.isPointLight()) {
 			lightRayDir = glm::vec3(light.location) - intersectPoint;
 			lightDir = lightRayDir;
 			distance = glm::length(lightRayDir);
+			atten = calculateLightIntensity(scene.attenuation, distance);
+
 		}
 		else {
 			lightRayDir = -glm::vec3(light.location);
 			lightDir = -glm::vec3(light.location);
 			distance = 0.0f;
+			atten = 1.0f;
 		}
 		Ray ray(intersectPoint, lightRayDir);
 		Intersection intersect = scene.findClosestIntersection(ray);
 		//Differentiate directional and point lights when calculating ray direction
 		if (!intersect.isValidIntersection() || !featureIsActive(Feature::SHADOWS)) {
-
-			float atten = calculateLightIntensity(scene.attenuation, distance);
 			float diffuseLightIntensity = calculateDiffuseLighting(intersectNormal, lightDir);
 			glm::vec3 eyeDir = glm::normalize(scene.getCamera().getEye() - intersectPoint);
 			glm::vec3 halfAngle = glm::normalize(lightDir + eyeDir);
@@ -209,11 +211,10 @@ Color computePixelColor(const Ray& ray, const Scene& scene, int currentDepth) {
 				return Color(1.0f, 0.0f, 0.0f);
 			}
 			else {
-				std::vector<Shape*> objects = scene.getSceneObjects();
 				Color lightColor = calculateLightingColor(scene, Camera::createPointFromRay(ray, closestIntersect.distAlongRay), closestIntersect.intersectNormal, closestIntersect.mat);
 				Ray reflectRay(Camera::createPointFromRay(ray, closestIntersect.distAlongRay), ray.dir - 2.0f*glm::dot(ray.dir, closestIntersect.intersectNormal)*closestIntersect.intersectNormal);
 				if (featureIsActive(Feature::REFLECTIONS)) {
-					return lightColor + 0.8*closestIntersect.mat.specular*computePixelColor(reflectRay, scene, ++currentDepth);
+					return lightColor + closestIntersect.mat.specular*computePixelColor(reflectRay, scene, ++currentDepth);
 				}
 				else {
 					return lightColor;
@@ -380,7 +381,7 @@ void runTests() {
 
 
 int main(int argc, char* argv[]) {
-	SceneMetaData metaData = createSceneMetaData("final_scenes/scene5.test");
+	SceneMetaData metaData = createSceneMetaData("final_scenes/scene4-specular.test");
 	createRender(metaData);
 	//createAllRendersForScene(metaData);
 	std::cout << "Finished Rendering" << std::endl;

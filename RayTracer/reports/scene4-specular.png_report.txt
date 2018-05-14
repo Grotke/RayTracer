@@ -1,24 +1,24 @@
 BENCHMARK RUN: MAY HAVE EXITED BEFORE COMPLETELY RENDERING
-PERFORMANCE REPORT FOR scene5.png
+PERFORMANCE REPORT FOR scene4-specular.png
 --------------------------------------------------------------------
 
 100% Completed
 
-Input Scene File: final_scenes/scene5.test
-Output Image: scene5.png
+Input Scene File: final_scenes/scene4-specular.test
+Output Image: scene4-specular.png
 Resolution: 640x480
 Pixels Processed: 307200
 
 Features Enabled: diffuse specular reporting time reflections shadows
 Debug Options: none
 
-Render Time: 19 hours 08 minutes 08 seconds
-Milliseconds Per Pixel: 1.58854
+Render Time: 19 hours 04 minutes 27 seconds
+Milliseconds Per Pixel: 0.869141
 
 Time Breakdown
-Total objects: 1000
------ Spheres: 1000
------ Triangles: 0
-Total lights: 2
------ Directional: 1
+Total objects: 66
+----- Spheres: 6
+----- Triangles: 60
+Total lights: 1
+----- Directional: 0
 ----- Point: 1

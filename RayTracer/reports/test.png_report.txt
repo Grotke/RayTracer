@@ -6,14 +6,14 @@ PERFORMANCE REPORT FOR test.png
 
 Input Scene File: test_scenes/scene3_light.test
 Output Image: test.png
-Resolution: 320x240
-Pixels Processed: 76800
+Resolution: 640x480
+Pixels Processed: 307200
 
 Features Enabled: diffuse specular reporting time reflections shadows
 Debug Options: none
 
-Render Time: 19 hours 01 minutes 07 seconds
-Milliseconds Per Pixel: 0.872396
+Render Time: 19 hours 04 minutes 14 seconds
+Milliseconds Per Pixel: 0.826823
 
 Time Breakdown
 Total objects: 66

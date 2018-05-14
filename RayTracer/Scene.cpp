@@ -16,8 +16,8 @@ Scene::Scene(const std::string& fileName){
 	Color diffuse = Color(0.0f, 0.0f, 0.0f), specular = Color(0.0f, 0.0f,0.0f), emission = Color(0.0f, 0.0f, 0.0f), ambient = Color(0.2f, 0.2f, 0.2f);
 	int numObjects = 0, maxObjects = 200;
 	int numVerts, numVertNorms;
-	glm::vec3 * verts = NULL;
-	glm::vec3 * vertNorms = NULL;
+	glm::vec3 * verts = nullptr;
+	glm::vec3 * vertNorms = nullptr;
 	int vertIndex = 0;
 	int vertNormIndex = 0;
 	float shininess = 0;

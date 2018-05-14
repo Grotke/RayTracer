@@ -31,7 +31,7 @@ Intersection Partition::intersect(const Ray& ray, const PartitionNode const * cu
 	if (currentNode == nullptr || !currentNode->box.intersect(ray).isValidIntersection()) {
 		return Intersection();
 	}
-	if (currentNode->isLeaf()) {
+	else if (currentNode->isLeaf()) {
 		//std::cout << currentNode->objects.size() << std::endl;
 		return currentNode->findClosestIntersection(ray);
 	}
@@ -41,10 +41,10 @@ Intersection Partition::intersect(const Ray& ray, const PartitionNode const * cu
 	if (!(left.isValidIntersection() || right.isValidIntersection())) {
 		return Intersection();
 	}
-	if ((left.isValidIntersection() && !right.isValidIntersection()) || left.distAlongRay <= right.distAlongRay) {
+	else if ((left.isValidIntersection() && !right.isValidIntersection()) || left.distAlongRay <= right.distAlongRay) {
 		return left;
 	}
-	if ((right.isValidIntersection() && !left.isValidIntersection()) || right.distAlongRay < left.distAlongRay) {
+	else{
 		return right;
 	}
 }
