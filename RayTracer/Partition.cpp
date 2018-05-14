@@ -15,7 +15,7 @@ Partition::Partition(const std::vector<Shape*>& objects)
 	for (Shape* obj : objects) {
 		insert(obj, root);
 	}
-	split(root, 0);
+	//split(root, 0);
 }
 
 

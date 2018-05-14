@@ -168,6 +168,7 @@ Color calculateLightingColor(const Scene& scene, const glm::vec3& intersectPoint
 		if (!intersect.isValidIntersection() || !featureIsActive(Feature::SHADOWS)) {
 			float diffuseLightIntensity = calculateDiffuseLighting(intersectNormal, lightDir);
 			glm::vec3 eyeDir = glm::normalize(scene.getCamera().getEye() - intersectPoint);
+			//glm::vec3 reflectDir = glm::normalize(lightDir + 2.0f*glm::dot(-lightDir, intersectNormal))*intersectNormal;
 			glm::vec3 halfAngle = glm::normalize(lightDir + eyeDir);
 			float specularLightIntensity = calculateSpecularLighting(objMat, intersectNormal, halfAngle);
 			if (debugIsActive(Debug::DIFFUSE_LIGHT_INTENSITY)) {
@@ -381,7 +382,7 @@ void runTests() {
 
 
 int main(int argc, char* argv[]) {
-	SceneMetaData metaData = createSceneMetaData("final_scenes/scene4-specular.test");
+	SceneMetaData metaData = createSceneMetaData("final_scenes/scene7.test");
 	createRender(metaData);
 	//createAllRendersForScene(metaData);
 	std::cout << "Finished Rendering" << std::endl;
