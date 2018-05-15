@@ -1,14 +1,50 @@
 # Raytracer
-More info coming soon. In the meantime, enjoy some renders this raytracer has produced.
-
-![Table with shadows and no reflections](http://www.josephcmontgomery.com/uploads/4/5/8/3/45834621/full-phong-scene3-light-test_1_orig.png)
-
-Shadows but no reflections. I like it better without reflections because the reflections are too "perfect" in the current version of the raytracer. I'd need to do distributed raytracing to make them less "perfect".
-
 ![Table with reflections](http://www.josephcmontgomery.com/uploads/4/5/8/3/45834621/all-features-scene3-light-test_orig.png)
+## Overview
+This is a 3D raytracer that produces static images from a file.
 
-With reflections.
+Features:
+* kd-trees for faster ray intersection tests
+* Toggleable Shadows
+* Toggleable Reflections
+* Blinn-Phong shading
+* Toggleable diffuse and specular components
+* Point and directional lighting
+* Triangle and sphere and transformed sphere intersections 
+* 5 debugging renders
+* Performance reporting
 
-![Table with no shadows](http://www.josephcmontgomery.com/uploads/4/5/8/3/45834621/no-shadows-scene3-light-test_orig.png)
+## Building
+### Prerequisites
+Visual Studio 2017
 
-No shadows here. Shadows make a big difference.
+Windows. Uses some Windows specific functions for parsing and building file paths. (Tested on Windows 7)
+
+### Instructions
+Must be built as x86 (32 bit). 
+
+You shouldn't need to do anything beyond hitting 'Build' in Visual Studio, but if it whines about not finding glm headers or FreeImage bindings you'll have to take these additional steps.
+
+Make these two changes in Project Properties (make sure it's set to apply to all configurations in all modes):
+1. Go to C/C++ -> General -> Additional Include Directories. Link to the glm folder in the root of the RayTracer project.
+
+2. Go to Linker->Input->Additional Dependencies and link to FreeImage.lib in the root of the RayTracer project.
+
+## Built With
+[FreeImage](http://freeimage.sourceforge.net/) To turn pixel buffers into images.
+
+[GLM (OpenGL Mathematics)](https://glm.g-truc.net/0.9.8/index.html) For the math libraries.
+
+## File Format Description
+Info coming soon...
+
+## Options
+You can toggle features and debugging options.
+### Features
+Info coming soon...
+### Debug views
+Info coming soon...
+### Multiple renders
+Info coming soon...
+### Performance Reporting
+Info coming soon...
