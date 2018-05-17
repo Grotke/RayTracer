@@ -143,4 +143,10 @@ Info coming soon...
 ### Performance Reporting
 Performance reporting is turned on by default. Every render creates a report in the reports/ directory with the name \[Output file name]_report.txt.
 
-Reports detail the image size, input file, output file, number of pixels processed, total time to process the scene, average milliseconds spent calculating each pixel, number of directional and point lights, number of objects, number of spheres and triangles.
+Reports note:
+* image size
+* input file and output file
+* number of pixels processed, average milliseconds spent calculating each pixel
+* total time to render scene
+* number of directional and point lights
+* number of objects, number of spheres and triangles
