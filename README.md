@@ -118,11 +118,29 @@ Once defined, material properties apply to every object defined afterwards until
 
 ## Options
 You can toggle features and debugging options.
-### Features
-Info coming soon...
+### Toggleable Features
+Shadows
+
+Reflections
+
+Diffuse Lighting
+
+Specular Lighting
+
+Performance Reporting
+
 ### Debug views
-Info coming soon...
-### Multiple renders
+Normal Map
+
+Shadow Map
+
+Specular Lighting Intensity Map
+
+Diffuse Lighting Intensity Map
+
+### Making consecutive renders
 Info coming soon...
 ### Performance Reporting
-Info coming soon...
+Performance reporting is turned on by default. Every render creates a report in the reports/ directory with the name \[Output file name]_report.txt.
+
+Reports detail the image size, input file, output file, number of pixels processed, total time to process the scene, average milliseconds spent calculating each pixel, number of directional and point lights, number of objects, number of spheres and triangles.
