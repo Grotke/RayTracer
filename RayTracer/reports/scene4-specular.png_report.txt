@@ -4,16 +4,16 @@ PERFORMANCE REPORT FOR scene4-specular.png
 
 100% Completed
 
-Input Scene File: final_scenes/scene4-specular.test
+Input Scene File: final_scenes/scene4-specular_small.test
 Output Image: scene4-specular.png
-Resolution: 640x480
-Pixels Processed: 307200
+Resolution: 160x120
+Pixels Processed: 19200
 
 Features Enabled: diffuse specular reporting time reflections shadows
 Debug Options: none
 
-Render Time: 19 hours 05 minutes 56 seconds
-Milliseconds Per Pixel: 1.15885
+Render Time: 19 hours 00 minutes 09 seconds
+Milliseconds Per Pixel: 0.46875
 
 Time Breakdown
 Total objects: 66

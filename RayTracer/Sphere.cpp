@@ -77,7 +77,7 @@ Intersection Sphere::intersect(const Ray& rawRay) const {
 	glm::vec3 normal = glm::transpose(glm::inverse(transform)) * glm::vec4(transfPoint - center, 0.0f);
 
 	glm::vec3 finalPoint = transform * glm::vec4(transfPoint, 1.0f);
-	return Intersection(glm::distance(finalPoint, rawRay.origin), normal);
+	return Intersection(glm::distance(finalPoint, rawRay.origin), glm::normalize(normal));
 }
 
 float Sphere::calculateDiscriminant(float a, float b, float c) const {

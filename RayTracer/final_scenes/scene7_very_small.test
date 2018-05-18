@@ -2,7 +2,6 @@
 
 size 160 120
 camera 0 0 20 0 0 -1 0 1 0 45
-#camera 0 0 -20 0 0 -1 0 1 0 45
 output scene7.png
 
 diffuse 0.4 0.1 0.1

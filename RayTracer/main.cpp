@@ -55,7 +55,7 @@ enum class Mode {
 
 std::unordered_map<Debug, std::string> debugNames({ { Debug::DIFFUSE_LIGHT_INTENSITY, "diffuse_intensity" },{ Debug::SPECULAR_LIGHT_INTENSITY, "specular_intensity" },{ Debug::NORMAL_MAP, "normals" },{ Debug::PRIMARY_INTERSECTION_MAP, "primary_intersect" },{ Debug::SHADOW_MAP, "shadow_intersect" },{ Debug::NONE, "none" } });
 std::unordered_map<Feature, std::string> featureNames({ { Feature::DIFFUSE_LIGHTING, "diffuse" }, {Feature::SPECULAR_LIGHTING, "specular"}, {Feature::REFLECTIONS, "reflections"}, {Feature::SHADOWS, "shadows"},{ Feature::KEEP_TIME, "time" },{ Feature::REPORT_PERFORMANCE, "reporting" } });
-int featureFlags = (int)Feature::DIFFUSE_LIGHTING | (int)Feature::SPECULAR_LIGHTING | (int)Feature::SHADOWS | (int)Feature::KEEP_TIME | (int)Feature::REPORT_PERFORMANCE | (int) Feature::REFLECTIONS;
+int featureFlags = (int)Feature::DIFFUSE_LIGHTING | (int)Feature::SHADOWS | (int)Feature::SPECULAR_LIGHTING | (int)Feature::KEEP_TIME | (int)Feature::REPORT_PERFORMANCE | (int) Feature::REFLECTIONS;
 Debug debugFlag = Debug::NONE;
 Mode currentMode = Mode::BENCHMARK;
 //spheres, triangles, file reading, shadow calculations, reflection calculations, pixel color calculations
@@ -135,7 +135,7 @@ float calculateSpecularLighting(const Material& objMat, const glm::vec3& normal,
 	return glm::pow(std::max(glm::dot(halfAngle, normal), 0.0f), objMat.shininess);
 }
 
-float calculateLightIntensity(const glm::vec3& attenuation, float distance) {
+float calculateAttenuation(const glm::vec3& attenuation, float distance) {
 	return 1.0f/(attenuation.x + attenuation.y*distance + attenuation.z*glm::pow(distance, 2.0f));
 }
 
@@ -150,24 +150,22 @@ Color calculateLightingColor(const Scene& scene, const glm::vec3& intersectPoint
 		float distance;
 		float atten;
 		if (light.isPointLight()) {
-			lightRayDir = glm::vec3(light.location) - intersectPoint;
-			lightDir = lightRayDir;
-			distance = glm::length(lightRayDir);
-			atten = calculateLightIntensity(scene.attenuation, distance);
-
+			lightDir = glm::vec3(light.location) - intersectPoint;
+			distance = glm::length(lightDir);
+			atten = calculateAttenuation(scene.attenuation, distance);
 		}
 		else {
-			lightRayDir = -glm::vec3(light.location);
-			lightDir = -glm::vec3(light.location);
-			distance = 0.0f;
+			lightDir = glm::vec3(light.location);
 			atten = 1.0f;
 		}
-		Ray ray(intersectPoint, lightRayDir);
+		Ray ray(intersectPoint, lightDir);
 		Intersection intersect = scene.findClosestIntersection(ray);
 		//Differentiate directional and point lights when calculating ray direction
-		if (!intersect.isValidIntersection() || !featureIsActive(Feature::SHADOWS)) {
+		//|| intersect.distAlongRay > glm::length(lightRayDir)
+		//|| intersect.distAlongRay >= glm::length(lightDir)
+		if (!intersect.isValidIntersection() || intersect.distAlongRay >= glm::length(lightDir) || !featureIsActive(Feature::SHADOWS)) {
 			float diffuseLightIntensity = calculateDiffuseLighting(intersectNormal, lightDir);
-			glm::vec3 eyeDir = glm::normalize(scene.getCamera().getEye() - intersectPoint);
+			glm::vec3 eyeDir = scene.getCamera().getEye() - intersectPoint;
 			//glm::vec3 reflectDir = glm::normalize(lightDir + 2.0f*glm::dot(-lightDir, intersectNormal))*intersectNormal;
 			glm::vec3 halfAngle = glm::normalize(lightDir + eyeDir);
 			float specularLightIntensity = calculateSpecularLighting(objMat, intersectNormal, halfAngle);
@@ -182,10 +180,10 @@ Color calculateLightingColor(const Scene& scene, const glm::vec3& intersectPoint
 			}
 			else {
 				if (featureIsActive(Feature::DIFFUSE_LIGHTING)) {
-					diffuseLightColor += atten * diffuseLightIntensity * light.color;
+					colorFromLights += atten * objMat.diffuse * diffuseLightIntensity * light.color;
 				}
 				if (featureIsActive(Feature::SPECULAR_LIGHTING)) {
-					specularLightColor += atten * specularLightIntensity * light.color;
+					colorFromLights += atten * objMat.specular* specularLightIntensity * light.color;
 				}
 			}
 		}
@@ -193,8 +191,8 @@ Color calculateLightingColor(const Scene& scene, const glm::vec3& intersectPoint
 				colorFromLights += intersect.mat.diffuse;
 		}
 	}
-	colorFromLights += objMat.diffuse * diffuseLightColor;
-	colorFromLights += objMat.specular * specularLightColor;
+	//colorFromLights += objMat.diffuse * diffuseLightColor;
+	//colorFromLights += objMat.specular * specularLightColor;
 	return colorFromLights;
 }
 

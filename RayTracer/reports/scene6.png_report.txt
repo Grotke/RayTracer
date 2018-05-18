@@ -4,16 +4,16 @@ PERFORMANCE REPORT FOR scene6.png
 
 100% Completed
 
-Input Scene File: final_scenes/scene6.test
+Input Scene File: final_scenes/scene6_small.test
 Output Image: scene6.png
-Resolution: 640x480
-Pixels Processed: 307200
+Resolution: 160x120
+Pixels Processed: 19200
 
 Features Enabled: diffuse specular reporting time reflections shadows
 Debug Options: none
 
-Render Time: 19 hours 23 minutes 54 seconds
-Milliseconds Per Pixel: 4.66797
+Render Time: 19 hours 00 minutes 52 seconds
+Milliseconds Per Pixel: 2.70833
 
 Time Breakdown
 Total objects: 38

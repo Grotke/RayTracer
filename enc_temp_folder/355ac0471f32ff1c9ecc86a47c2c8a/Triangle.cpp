@@ -166,6 +166,41 @@ Intersection Triangle::intersect(const Ray& ray) const {
 		}
 	}
 	return Intersection();
+
+	/*glm::vec3 planeNormal = calculatePlaneNormal();
+	if (!glm::epsilonEqual(glm::dot(ray.dir, planeNormal), 0.0f, 0.01f)) {
+		float d = glm::dot(v1, planeNormal);
+		float t = d-glm::dot(planeNormal, ray.origin);
+		if (t < 0.0f) {
+			return Intersection();
+		}
+		glm::vec3 point = ray.origin + t * ray.dir;
+		glm::vec3 perp;
+
+		glm::vec3 e1 = v2 - v1;
+		glm::vec3 d1 = point - v1;
+		perp = glm::cross(e1, d1);
+		if (glm::dot(planeNormal, perp) <= 0.0f) {
+			return Intersection();
+		}
+
+		glm::vec3 e2 = v3 - v2;
+		glm::vec3 d2 = point - v2;
+		perp = glm::cross(e2, d2);
+		if (glm::dot(planeNormal, perp) <= 0.0f) {
+			return Intersection();
+		}
+
+		glm::vec3 e3 = v1 - v3;
+		glm::vec3 d3 = point - v3;
+		perp = glm::cross(e3, d3);
+		if (glm::dot(planeNormal, perp) <= 0.0f) {
+			return Intersection();
+		}
+
+		return Intersection(glm::distance(point, ray.origin), planeNormal);
+	}
+	return Intersection();*/
 }
 
 glm::vec3 Triangle::calculatePlaneNormal() const {
