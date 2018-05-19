@@ -150,7 +150,7 @@ Intersection Triangle::intersect(const Ray& ray) const {
 	if (!glm::epsilonEqual(glm::dot(ray.dir, planeNormal), 0.0f, 0.00001f)) {
 		float d = glm::dot(v1, planeNormal);
 		float t = (d - glm::dot(ray.origin, planeNormal)) / glm::dot(ray.dir, planeNormal);
-		if (t < 0.00001f) {
+		if (t < 0.0001f) {
 			return Intersection();
 		}
 		glm::vec3 P = ray.origin + t * ray.dir;

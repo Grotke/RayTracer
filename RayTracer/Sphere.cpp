@@ -63,15 +63,17 @@ Intersection Sphere::intersect(const Ray& rawRay) const {
 	float b = 2.0f * glm::dot(ray.dir, (ray.origin - center));
 	float c = glm::dot((ray.origin - center), (ray.origin - center)) - glm::pow(radius, 2.0f);
 	float discrim = calculateDiscriminant(a, b, c);
-	if (discrim < 0.0f) {
+	if (discrim < 0.0000001f) {
 		return Intersection();
 	}
 	float x1 = (-b + glm::sqrt(discrim)) / 2.0f * a;
 	float x2 = (-b - glm::sqrt(discrim)) / 2.0f * a;
 	float t = std::min(x1, x2);
 	if (t < 0.005f) {
-		//One is negative so return the maximum number which should be positive
-		return Intersection();
+		t = std::max(x1, x2);
+		if (t < 0.005f) {
+			return Intersection();
+		}
 	}
 	glm::vec3 transfPoint = ray.origin + ray.dir * t;
 	glm::vec3 normal = glm::transpose(glm::inverse(transform)) * glm::vec4(transfPoint - center, 0.0f);

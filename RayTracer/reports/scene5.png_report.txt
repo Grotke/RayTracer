@@ -12,8 +12,8 @@ Pixels Processed: 307200
 Features Enabled: diffuse specular reporting time reflections shadows
 Debug Options: none
 
-Render Time: 19 hours 05 minutes 33 seconds
-Milliseconds Per Pixel: 1.08398
+Render Time: 19 hours 04 minutes 39 seconds
+Milliseconds Per Pixel: 0.908203
 
 Time Breakdown
 Total objects: 1000
