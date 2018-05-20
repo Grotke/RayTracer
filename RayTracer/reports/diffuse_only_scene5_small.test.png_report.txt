@@ -1,0 +1,24 @@
+BENCHMARK RUN: MAY HAVE EXITED BEFORE COMPLETELY RENDERING
+PERFORMANCE REPORT FOR diffuse_only_scene5_small.test.png
+--------------------------------------------------------------------
+
+100% Completed
+
+Input Scene File: final_scenes/scene5_small.test
+Output Image: renders/diffuse_only_scene5_small.test.png
+Resolution: 160x120
+Pixels Processed: 19200
+
+Features Enabled: diffuse reporting time
+Debug Options: none
+
+Render Time: 19 hours 00 minutes 14 seconds
+Milliseconds Per Pixel: 0.729167
+
+Time Breakdown
+Total objects: 1000
+----- Spheres: 1000
+----- Triangles: 0
+Total lights: 1
+----- Directional: 0
+----- Point: 1

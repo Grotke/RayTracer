@@ -3,8 +3,6 @@
 #include <algorithm>
 #include <glm/gtc/epsilon.hpp>
 
-
-
 Triangle::Triangle(const glm::vec3& inV1, const glm::vec3& inV2, const glm::vec3& inV3, const glm::mat4& inTransform, const Material& mat, const glm::vec3& inN1, const glm::vec3& inN2, const glm::vec3& inN3)
 	:Shape(inTransform, mat)
 {
@@ -16,7 +14,6 @@ Triangle::Triangle(const glm::vec3& inV1, const glm::vec3& inV2, const glm::vec3
 	n2 = inverseTranspose * glm::vec4(inN2, 0.0f);
 	n3 = inverseTranspose * glm::vec4(inN3, 0.0f);
 }
-
 
 Triangle::~Triangle()
 {
@@ -36,18 +33,23 @@ Triangle::Triangle(const glm::vec3& inV1, const glm::vec3& inV2, const glm::vec3
 float Triangle::getMinX() const {
 	return std::min(v3.x, std::min(v1.x, v2.x));
 }
+
 float Triangle::getMinY() const {
 	return std::min(v3.y, std::min(v1.y, v2.y));
 }
+
 float Triangle::getMinZ() const {
 	return std::min(v3.z, std::min(v1.z, v2.z));
 }
+
 float Triangle::getMaxX() const {
 	return std::max(v3.x, std::max(v1.x, v2.x));
 }
+
 float Triangle::getMaxY() const {
 	return std::max(v3.y, std::max(v1.y, v2.y));
 }
+
 float Triangle::getMaxZ() const  {
 	return std::max(v3.z, std::max(v1.z, v2.z));
 }
@@ -170,5 +172,4 @@ Intersection Triangle::intersect(const Ray& ray) const {
 
 glm::vec3 Triangle::calculatePlaneNormal() const {
 	return glm::normalize(glm::cross(v2 - v1, v3 - v1));
-	//return glm::cross(v3 - v2, v1 - v3);
 }

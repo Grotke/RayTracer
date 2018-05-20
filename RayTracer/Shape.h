@@ -1,7 +1,10 @@
 #pragma once
 #include <glm/glm.hpp>
 #include "SceneObjects.hpp"
+
+//Forward declare AABB
 class AABB;
+
 class Shape
 {
 public:

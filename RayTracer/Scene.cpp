@@ -213,14 +213,26 @@ Scene::Scene(const std::string& fileName){
 		isLoaded = false;
 		std::cout << "Unable to open file " << fileName << std::endl;
 	}
+	if (verts != nullptr) {
+		delete[] verts;
+		verts = nullptr;
+	}
+	if (vertNorms != nullptr) {
+		delete[] vertNorms;
+		vertNorms = nullptr;
+	}
 }
 
-Scene::~Scene()
-{
+Scene::~Scene(){
+	objectTree->~Partition();
+	delete objectTree;
+	for (Shape* obj : objects) {
+		delete obj;
+		obj = nullptr;
+	}
 }
 
-bool Scene::readvals(std::stringstream &s, int numvals, float* values)
-{
+bool Scene::readvals(std::stringstream &s, int numvals, float* values){
 	for (int i = 0; i < numvals; i++) {
 		s >> values[i];
 		if (s.fail()) {
@@ -230,7 +242,6 @@ bool Scene::readvals(std::stringstream &s, int numvals, float* values)
 	}
 	return true;
 }
-  
 
 const Camera& Scene::getCamera() const {
 	return cam;
@@ -244,6 +255,7 @@ const std::string& Scene::getOutputFileName() const {
 	return outputFileName;
 }
 
+//Need width and height to return const, otherwise complain when initializing pixel buffer
 const unsigned int Scene::getWidth() const {
 	return width;
 }
