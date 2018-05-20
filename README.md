@@ -132,14 +132,13 @@ Diffuse Lighting Intensity Map
 
 ![Stanford Dragon Diffuse Intensity Map](http://www.josephcmontgomery.com/uploads/4/5/8/3/45834621/debug-diffuse-intensityscene7-test_orig.png)
 
-### Making consecutive renders
-Info coming soon...
 ### Performance Reporting
 Performance reporting is turned on by default. Every render creates a report in the reports/ directory with the name \[Output file name]_report.txt.
 
 Reports note:
 * image size
 * input file and output file
+* list of enabled features and any debug view active
 * number of pixels processed, average milliseconds spent calculating each pixel
 * total time to render scene
 * number of directional and point lights
