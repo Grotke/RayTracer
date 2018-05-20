@@ -10,7 +10,7 @@ ambient .1 .1 .1
 specular 0.1 0.1 0.1
 shininess 100
 #point 0 -2 0 .5 .5 .5
-directional 0 -1 -1 .5 .5 .5
+directional 0 1 1 .5 .5 .5
 maxverts 8
 
 vertex -1 -1 -1

@@ -93,7 +93,7 @@ Debug debugFlag = Debug::NONE;
 Mode currentMode = Mode::BENCHMARK;
 
 int main(int argc, char* argv[]) {
-	SceneMetaData metaData = createSceneMetaData("final_scenes/scene5_small.test");
+	SceneMetaData metaData = createSceneMetaData("test_scenes/scene3_light.test");
 	createRender(metaData);
 	//createAllRendersForScene(metaData);
 	std::cout << "Finished Rendering" << std::endl;
