@@ -86,9 +86,14 @@ std::string reportDirectory = "reports/";
 std::string renderDirectory = "renders/";
 std::string debugRenderDirectory = "debug_renders/";
 std::string testFile = "scene1.test";
+std::unordered_map<Debug, std::string> debugNames({ { Debug::DIFFUSE_LIGHT_INTENSITY, "diffuse_intensity" },{ Debug::SPECULAR_LIGHT_INTENSITY, "specular_intensity" },{ Debug::NORMAL_MAP, "normals" },{ Debug::PRIMARY_INTERSECTION_MAP, "primary_intersect" },{ Debug::SHADOW_MAP, "shadow_intersect" },{ Debug::LIGHT_DIRECTION_MAP, "light_direction_map" },{ Debug::NONE, "none" } });
+std::unordered_map<Feature, std::string> featureNames({ { Feature::DIFFUSE_LIGHTING, "diffuse" },{ Feature::SPECULAR_LIGHTING, "specular" },{ Feature::REFLECTIONS, "reflections" },{ Feature::SHADOWS, "shadows" },{ Feature::KEEP_TIME, "time" },{ Feature::REPORT_PERFORMANCE, "reporting" } });
+int featureFlags = (int)Feature::DIFFUSE_LIGHTING | (int)Feature::SHADOWS | (int)Feature::SPECULAR_LIGHTING | (int)Feature::KEEP_TIME | (int)Feature::REPORT_PERFORMANCE | (int)Feature::REFLECTIONS;
+Debug debugFlag = Debug::NONE;
+Mode currentMode = Mode::BENCHMARK;
 
 int main(int argc, char* argv[]) {
-	SceneMetaData metaData = createSceneMetaData("test_scenes/scene3_light.test");
+	SceneMetaData metaData = createSceneMetaData("final_scenes/scene5_small.test");
 	createRender(metaData);
 	//createAllRendersForScene(metaData);
 	std::cout << "Finished Rendering" << std::endl;
@@ -267,12 +272,6 @@ SceneMetaData createSceneMetaData(const std::string& sceneFilePath) {
 	return metaData;
 }
 
-std::unordered_map<Debug, std::string> debugNames({ { Debug::DIFFUSE_LIGHT_INTENSITY, "diffuse_intensity" },{ Debug::SPECULAR_LIGHT_INTENSITY, "specular_intensity" },{ Debug::NORMAL_MAP, "normals" },{ Debug::PRIMARY_INTERSECTION_MAP, "primary_intersect" },{ Debug::SHADOW_MAP, "shadow_intersect" },{Debug::LIGHT_DIRECTION_MAP, "light_direction_map"}, { Debug::NONE, "none" } });
-std::unordered_map<Feature, std::string> featureNames({ { Feature::DIFFUSE_LIGHTING, "diffuse" }, {Feature::SPECULAR_LIGHTING, "specular"}, {Feature::REFLECTIONS, "reflections"}, {Feature::SHADOWS, "shadows"},{ Feature::KEEP_TIME, "time" },{ Feature::REPORT_PERFORMANCE, "reporting" } });
-int featureFlags = (int)Feature::DIFFUSE_LIGHTING | (int)Feature::SHADOWS | (int)Feature::SPECULAR_LIGHTING | (int)Feature::KEEP_TIME | (int)Feature::REPORT_PERFORMANCE | (int)Feature::REFLECTIONS;
-Debug debugFlag = Debug::NONE;
-Mode currentMode = Mode::BENCHMARK;
-
 inline bool modeIs(Mode mode) {
 	return currentMode == mode;
 }
@@ -386,6 +385,3 @@ void createAllRendersForScene(const std::string& sceneFile) {
 	SceneMetaData metaData = createSceneMetaData(sceneFile);
 	createAllRendersForScene(metaData);
 }
-
-
-

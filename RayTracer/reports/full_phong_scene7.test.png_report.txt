@@ -1,0 +1,24 @@
+BENCHMARK RUN: MAY HAVE EXITED BEFORE COMPLETELY RENDERING
+PERFORMANCE REPORT FOR full_phong_scene7.test.png
+--------------------------------------------------------------------
+
+100% Completed
+
+Input Scene File: final_scenes/scene7.test
+Output Image: renders/full_phong_scene7.test.png
+Resolution: 640x480
+Pixels Processed: 307200
+
+Features Enabled: diffuse specular reporting time shadows
+Debug Options: none
+
+Render Time: 19 hours 00 minutes 03 seconds
+Milliseconds Per Pixel: 0.00976563
+
+Time Breakdown
+Total objects: 100000
+----- Spheres: 0
+----- Triangles: 100000
+Total lights: 1
+----- Directional: 0
+----- Point: 1

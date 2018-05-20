@@ -1,24 +1,24 @@
 BENCHMARK RUN: MAY HAVE EXITED BEFORE COMPLETELY RENDERING
-PERFORMANCE REPORT FOR scene5.png
+PERFORMANCE REPORT FOR debug_light_direction_mapscene5_small.test.png
 --------------------------------------------------------------------
 
 100% Completed
 
 Input Scene File: final_scenes/scene5_small.test
-Output Image: scene5.png
+Output Image: debug_renders/debug_light_direction_mapscene5_small.test.png
 Resolution: 160x120
 Pixels Processed: 19200
 
 Features Enabled: diffuse specular reporting time reflections shadows
-Debug Options: none
+Debug Options: light_direction_map
 
-Render Time: 19 hours 00 minutes 01 seconds
-Milliseconds Per Pixel: 0.0520833
+Render Time: 19 hours 00 minutes 19 seconds
+Milliseconds Per Pixel: 0.989583
 
 Time Breakdown
 Total objects: 1000
 ----- Spheres: 1000
 ----- Triangles: 0
-Total lights: 2
------ Directional: 1
+Total lights: 1
+----- Directional: 0
 ----- Point: 1

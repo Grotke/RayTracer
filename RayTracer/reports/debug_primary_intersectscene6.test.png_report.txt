@@ -1,0 +1,24 @@
+BENCHMARK RUN: MAY HAVE EXITED BEFORE COMPLETELY RENDERING
+PERFORMANCE REPORT FOR debug_primary_intersectscene6.test.png
+--------------------------------------------------------------------
+
+100% Completed
+
+Input Scene File: final_scenes/scene6.test
+Output Image: debug_renders/debug_primary_intersectscene6.test.png
+Resolution: 640x480
+Pixels Processed: 307200
+
+Features Enabled: diffuse specular reporting time reflections shadows
+Debug Options: primary_intersect
+
+Render Time: 19 hours 00 minutes 01 seconds
+Milliseconds Per Pixel: 0.00325521
+
+Time Breakdown
+Total objects: 38
+----- Spheres: 4
+----- Triangles: 34
+Total lights: 2
+----- Directional: 1
+----- Point: 1

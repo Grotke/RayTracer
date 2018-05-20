@@ -1,7 +1,6 @@
 #pragma once
 #include <vector>
 #include "SceneObjects.hpp"
-#include "Camera.h"
 #include "Shape.h"
 #include "AABB.h"
 
@@ -30,7 +29,6 @@ class Partition{
 				Intersection objIntersect;
 
 				for (Shape* obj: objects) {
-					//I don't know why, but when I had a const reference to Ray it wouldn't let me do a *this so I changed it to use pointers instead
 					Intersection currentIntersect = obj->intersect(ray);
 					if (currentIntersect.isValidIntersection() && (currentIntersect.distAlongRay < objIntersect.distAlongRay || !objIntersect.isValidIntersection())) {
 						objIntersect = currentIntersect;
@@ -47,5 +45,6 @@ class Partition{
 		bool insert(Shape* object, PartitionNode* nodeToInsert);
 		Intersection intersect(const Ray& ray, const PartitionNode const * currentNode) const;
 		PartitionNode* root;
+		void deallocateTree(PartitionNode*& node);
 };
 
