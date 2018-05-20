@@ -118,7 +118,7 @@ Once defined, material properties apply to every object defined afterwards until
 
 
 ## Options
-You can toggle features and debugging options.
+You can toggle features and debugging options. They're noted in main.cpp in the featureFlags and debugFlag variables. Features are 'or'd together to make a bitmap. Only one debug view should be enabled at a time.
 ### Debug views
 Normal Map
 
@@ -132,14 +132,13 @@ Diffuse Lighting Intensity Map
 
 ![Stanford Dragon Diffuse Intensity Map](http://www.josephcmontgomery.com/uploads/4/5/8/3/45834621/debug-diffuse-intensityscene7-test_orig.png)
 
-### Making consecutive renders
-Info coming soon...
 ### Performance Reporting
 Performance reporting is turned on by default. Every render creates a report in the reports/ directory with the name \[Output file name]_report.txt.
 
 Reports note:
 * image size
 * input file and output file
+* list of enabled features and any debug view active
 * number of pixels processed, average milliseconds spent calculating each pixel
 * total time to render scene
 * number of directional and point lights
