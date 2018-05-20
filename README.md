@@ -118,7 +118,7 @@ Once defined, material properties apply to every object defined afterwards until
 
 
 ## Options
-You can toggle features and debugging options.
+You can toggle features and debugging options. They're noted in main.cpp in the featureFlags and debugFlag variables. Features are 'or'd together to make a bitmap. Only one debug view should be enabled at a time.
 ### Debug views
 Normal Map
 
