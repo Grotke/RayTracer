@@ -230,7 +230,6 @@ bool Scene::readvals(std::stringstream &s, int numvals, float* values)
 	}
 	return true;
 }
-  
 
 const Camera& Scene::getCamera() const {
 	return cam;
@@ -244,6 +243,7 @@ const std::string& Scene::getOutputFileName() const {
 	return outputFileName;
 }
 
+//Need width and height to return const, otherwise complain when initializing pixel buffer
 const unsigned int Scene::getWidth() const {
 	return width;
 }

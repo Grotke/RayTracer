@@ -1,8 +1,5 @@
 #include "Camera.h"
-
 #include <glm/trigonometric.hpp>
-#include <iostream>
-
 
 Camera::Camera(const glm::vec3& lookFrom, const glm::vec3& lookAt, const glm::vec3& up, float fovy) : lookFrom(lookFrom), lookAt(lookAt), up(glm::normalize(up)), fovy(fovy)
 {

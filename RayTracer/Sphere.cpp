@@ -2,12 +2,9 @@
 #include <algorithm>
 #include "AABB.h"
 
-
-
 Sphere::Sphere(const glm::vec3& center, float radius, const glm::mat4& transform, const Material& mat): Shape(transform, mat), center(center), radius(radius){
 
 }
-
 
 Sphere::~Sphere()
 {
@@ -17,10 +14,12 @@ float Sphere::getMinX() const {
 	float x = (transform * glm::vec4(center.x - radius, 0.0f, 0.0f, 1.0f)).x;
 	return x;
 }
+
 float Sphere::getMinY() const {
 	float y = (transform * glm::vec4(0.0f, center.y - radius, 0.0f, 1.0f)).y;
 	return y;
 }
+
 float Sphere::getMinZ() const {
 	float z = (transform * glm::vec4(0.0f, 0.0f, center.z -radius, 1.0f)).z;
 	return z;

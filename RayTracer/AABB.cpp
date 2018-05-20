@@ -1,9 +1,6 @@
 #include "AABB.h"
 #include <glm/gtc/epsilon.hpp>
 #include <algorithm>
-#include <iostream>
-
-
 
 AABB::AABB(const glm::vec3& min, const glm::vec3& max): min(min), max(max)
 {
@@ -128,15 +125,12 @@ AABB AABB::splitLeft() const {
 	switch (longest) {
 	case Axis::X:
 		newMax = glm::vec3(midpoint.x, max.y, max.z);
-		//std::cout << "Split left on X axis" << std::endl;
 		break;
 	case Axis::Y:
 		newMax = glm::vec3(max.x, midpoint.y, max.z);
-		//std::cout << "Split left on Y axis" << std::endl;
 		break;
 	case Axis::Z:
 		newMax = glm::vec3(max.x, max.y, midpoint.z);
-		//std::cout << "Split left on Z axis" << std::endl;
 		break;
 	}
 	return AABB(min, newMax);
@@ -149,15 +143,12 @@ AABB AABB::splitRight() const {
 	switch (longest) {
 	case Axis::X:
 		newMin = glm::vec3(midpoint.x, min.y, min.z);
-		//std::cout << "Split right on X axis" << std::endl;
 		break;
 	case Axis::Y:
 		newMin = glm::vec3(min.x, midpoint.y, min.z);
-		//std::cout << "Split right on Y axis" << std::endl;
 		break;
 	case Axis::Z:
 		newMin = glm::vec3(min.x, min.y, midpoint.z);
-		//std::cout << "Split right on Z axis" << std::endl;
 		break;
 	}
 	return AABB(newMin, max);
