@@ -1,5 +1,6 @@
 # Raytracer
-![Table with reflections](http://www.josephcmontgomery.com/uploads/4/5/8/3/45834621/all-features-scene3-light-test_orig.png)
+![Cornell Box](http://www.josephcmontgomery.com/uploads/4/5/8/3/45834621/scene6_orig.png)
+![Stanford Dragon](http://www.josephcmontgomery.com/uploads/4/5/8/3/45834621/scene7_orig.png)
 ## Overview
 This is a 3D raytracer that produces static images from a file.
 
@@ -118,25 +119,18 @@ Once defined, material properties apply to every object defined afterwards until
 
 ## Options
 You can toggle features and debugging options.
-### Toggleable Features
-Shadows
-
-Reflections
-
-Diffuse Lighting
-
-Specular Lighting
-
-Performance Reporting
-
 ### Debug views
 Normal Map
 
-Shadow Map
+![Stanford Dragon Normal Map](http://www.josephcmontgomery.com/uploads/4/5/8/3/45834621/debug-normalsscene7-test_orig.png)
 
 Specular Lighting Intensity Map
 
+![Stanford Dragon Specular Intensity Map](http://www.josephcmontgomery.com/uploads/4/5/8/3/45834621/debug-specular-intensityscene7-test_orig.png)
+
 Diffuse Lighting Intensity Map
+
+![Stanford Dragon Diffuse Intensity Map](http://www.josephcmontgomery.com/uploads/4/5/8/3/45834621/debug-diffuse-intensityscene7-test_orig.png)
 
 ### Making consecutive renders
 Info coming soon...
