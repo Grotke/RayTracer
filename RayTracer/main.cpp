@@ -80,7 +80,7 @@ void createAllFeatureRendersForScene(const std::string& sceneFile);
 void createAllDebugRendersForScene(const std::string& sceneFile);
 void createAllRendersForScene(const std::string& sceneFile);
 
-double sampleTimeInSeconds = 5.0;
+int sampleTimeInSeconds = 5;
 std::string testScenesDirectory = "test_scenes/";
 std::string reportDirectory = "reports/";
 std::string renderDirectory = "renders/";
@@ -134,16 +134,16 @@ void createRender(const SceneMetaData& sceneFileData, std::string outputFileName
 	struct tm sample = { 0 };
 	sample.tm_sec = sampleTimeInSeconds;
 	int currentPixel;
-	for (int i = 0; i < h; i++) {
-		for (int j = 0; j < w; j++) {
+	for (unsigned int i = 0; i < h; i++) {
+		for (unsigned int j = 0; j < w; j++) {
 			currentPixel = i * w + j;
 			if (featureIsActive(Feature::KEEP_TIME)) {
 				double seconds = difftime(time(NULL), lastSampleTime);
 				if (seconds > sampleTimeInSeconds) {
 					lastSampleTime = time(NULL);
-					float percentComplete = (currentPixel / (float)total) * 100.0f;
+					float percentComplete = (currentPixel / static_cast<float>(total)) * 100.0f;
 					double totalTime = difftime(lastSampleTime, startTime);
-					float estTime = ((float)total - currentPixel) / (currentPixel / totalTime);
+					double estTime = (static_cast<double>(total) - currentPixel) / (currentPixel / totalTime);
 					std::cout << percentComplete << "% complete. Estimated time: " << estTime << " seconds" << std::endl;
 				}
 			}
@@ -277,15 +277,15 @@ inline bool modeIs(Mode mode) {
 }
 
 inline void removeFeature(Feature feature) {
-	featureFlags ^= (int)feature;
+	featureFlags ^= static_cast<int>(feature);
 }
 
 inline void addFeature(Feature feature) {
-	featureFlags |= (int)feature;
+	featureFlags |= static_cast<int>(feature);
 }
 
 inline bool featureIsActive(Feature requestedFeature) {
-	return featureFlags & (int)requestedFeature;
+	return featureFlags & static_cast<int>(requestedFeature);
 }
 
 inline bool debugIsActive(Debug requestedDebug) {
@@ -320,7 +320,7 @@ void createPerformanceReport(const SceneMetaData& metaData, const std::string& o
 	}
 	report << "PERFORMANCE REPORT FOR " << outputMeta.sceneTitle << std::endl;
 	report << "--------------------------------------------------------------------" << std::endl << std::endl;
-	report << std::min((int)((pixelsProcessed / (float)scene.getWidth() * scene.getHeight()) * 100), 100) << "% Completed" << std::endl << std::endl;
+	report << std::min(static_cast<int>(((pixelsProcessed / static_cast<float>(scene.getWidth()) * scene.getHeight()) * 100)), 100) << "% Completed" << std::endl << std::endl;
 	report << "Input Scene File: " << metaData.filePath << std::endl;
 	report << "Output Image: " << outputFileName << std::endl;
 	report << "Resolution: " << scene.getWidth() << "x" << scene.getHeight() << std::endl;
@@ -332,7 +332,7 @@ void createPerformanceReport(const SceneMetaData& metaData, const std::string& o
 	localtime_s(&timeInfo, &totalTimeInSeconds);
 	strftime(buffer, 80, "%H hours %M minutes %S seconds", &timeInfo);
 	report << "Render Time: " << buffer << std::endl;
-	report << "Milliseconds Per Pixel: " << totalTimeInSeconds * 1000 / (float)pixelsProcessed << std::endl << std::endl;
+	report << "Milliseconds Per Pixel: " << totalTimeInSeconds * 1000 / static_cast<float>(pixelsProcessed) << std::endl << std::endl;
 	report << "Time Breakdown" << std::endl;
 	report << "Total objects: " << scene.getNumObjects() << std::endl;
 	report << "----- Spheres: " << scene.getNumSpheres() << std::endl;
@@ -344,8 +344,8 @@ void createPerformanceReport(const SceneMetaData& metaData, const std::string& o
 }
 
 void createAllDebugRendersForScene(const SceneMetaData& metaData) {
-	for (int flag = 0; flag != (int)Debug::NONE; flag++) {
-		debugFlag = (Debug)flag;
+	for (int flag = 0; flag != static_cast<int>(Debug::NONE); flag++) {
+		debugFlag = static_cast<Debug>(flag);
 		createRender(metaData, debugRenderDirectory+"debug_"+debugNames.find(debugFlag)->second+metaData.sceneTitle);
 	}
 }

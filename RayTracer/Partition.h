@@ -43,7 +43,7 @@ class Partition{
 		};
 		void split(PartitionNode* nodeToSplit, int prevMatches);
 		bool insert(Shape* object, PartitionNode* nodeToInsert);
-		Intersection intersect(const Ray& ray, const PartitionNode const * currentNode) const;
+		Intersection intersect(const Ray& ray, PartitionNode const * const currentNode) const;
 		PartitionNode* root;
 		void deallocateTree(PartitionNode*& node);
 };

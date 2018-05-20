@@ -32,7 +32,7 @@ Intersection Partition::findClosestintersection(const Ray& ray) const {
 	return intersect(ray, root);
 }
 
-Intersection Partition::intersect(const Ray& ray, const PartitionNode const * currentNode) const {
+Intersection Partition::intersect(const Ray& ray, PartitionNode const * const currentNode) const {
 	if (currentNode == nullptr || !currentNode->box.intersect(ray).isValidIntersection()) {
 		return Intersection();
 	}
