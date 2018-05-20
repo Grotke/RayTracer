@@ -21,13 +21,13 @@ Ray Camera::createRayToPixel(float i, float j, int width, int height) const {
 	glm::vec3 v = glm::normalize(glm::cross(w, u));
 	float alpha = glm::tan(glm::radians(fovy / 2.0f)) * (static_cast<float>(width)/height) * ((i - (width/2.0f))/(width/2.0f));
 	float beta = glm::tan(glm::radians(fovy / 2.0f)) * (((height / 2.0f) - j) / (height / 2.0f));
-	glm::vec3 rayDir = glm::normalize((alpha * u) + (beta * v) - w);
+	glm::vec3 rayDir = (alpha * u) + (beta * v) - w;
 
 	return Ray(lookFrom, rayDir);
 }
 
 glm::vec3 Camera::createPointFromRay(const Ray& ray, float t) {
-	return ray.origin + ray.dir*t;
+	return ray.origin + glm::normalize(ray.dir)*t;
 }
 
 const glm::vec3& Camera::getEye() const {

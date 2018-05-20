@@ -59,27 +59,28 @@ bool Sphere::isInside(const AABB& box) const {
 
 Intersection Sphere::intersect(const Ray& rawRay) const {
 	Ray ray(glm::inverse(transform) * glm::vec4(rawRay.origin, 1.0f), glm::normalize(glm::inverse(transform) * glm::vec4(rawRay.dir, 0.0f)));
-	float a = glm::dot(ray.dir, ray.dir);
-	float b = 2.0f * glm::dot(ray.dir, (ray.origin - center));
+	glm::vec3 normalRayDir = glm::normalize(ray.dir);
+	float a = glm::dot(normalRayDir, normalRayDir);
+	float b = 2.0f * glm::dot(normalRayDir, (ray.origin - center));
 	float c = glm::dot((ray.origin - center), (ray.origin - center)) - glm::pow(radius, 2.0f);
 	float discrim = calculateDiscriminant(a, b, c);
-	if (discrim < 0.0000001f) {
+	if (discrim < 0.0f) {
 		return Intersection();
 	}
 	float x1 = (-b + glm::sqrt(discrim)) / 2.0f * a;
 	float x2 = (-b - glm::sqrt(discrim)) / 2.0f * a;
 	float t = std::min(x1, x2);
-	if (t < 0.005f) {
+	if (t < 0.001f) {
 		t = std::max(x1, x2);
-		if (t < 0.005f) {
+		if (t < 0.001f) {
 			return Intersection();
 		}
 	}
 	glm::vec3 transfPoint = ray.origin + ray.dir * t;
-	glm::vec3 normal = glm::transpose(glm::inverse(transform)) * glm::vec4(transfPoint - center, 0.0f);
+	glm::vec3 normal = glm::transpose(glm::inverse(transform)) * glm::vec4(2.0f*(transfPoint - center), 0.0f);
 
 	glm::vec3 finalPoint = transform * glm::vec4(transfPoint, 1.0f);
-	return Intersection(glm::distance(finalPoint, rawRay.origin), glm::normalize(normal));
+	return Intersection(glm::distance(finalPoint, rawRay.origin), normal);
 }
 
 float Sphere::calculateDiscriminant(float a, float b, float c) const {

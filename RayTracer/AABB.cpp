@@ -53,19 +53,19 @@ Intersection AABB::intersect(const Ray& ray) const {
 	// Any component of direction could be 0!
 	// Address this by using a small number, close to
 	// 0 in case any of directions components are 0
-	float t1 = (min.x - ray.origin.x) / (glm::epsilonEqual(ray.dir.x, 0.0f, 0.0001f) ? 0.00001f : ray.dir.x);
-	float t2 = (max.x - ray.origin.x) / (glm::epsilonEqual(ray.dir.x, 0.0f, 0.0001f) ? 0.00001f : ray.dir.x);
-	float t3 = (min.y - ray.origin.y) / (glm::epsilonEqual(ray.dir.y, 0.0f, 0.0001f) ? 0.00001f : ray.dir.y);
-	float t4 = (max.y - ray.origin.y) / (glm::epsilonEqual(ray.dir.y, 0.0f, 0.0001f) ? 0.00001f : ray.dir.y);
-	float t5 = (min.z - ray.origin.z) / (glm::epsilonEqual(ray.dir.z, 0.0f, 0.0001f) ? 0.00001f : ray.dir.z);
-	float t6 = (max.z - ray.origin.z) / (glm::epsilonEqual(ray.dir.z, 0.0f, 0.0001f) ? 0.00001f : ray.dir.z);
+	float t1 = (min.x - ray.origin.x) / (glm::epsilonEqual(ray.dir.x, 0.0f, 0.00001f) ? 0.00001f : ray.dir.x);
+	float t2 = (max.x - ray.origin.x) / (glm::epsilonEqual(ray.dir.x, 0.0f, 0.00001f) ? 0.00001f : ray.dir.x);
+	float t3 = (min.y - ray.origin.y) / (glm::epsilonEqual(ray.dir.y, 0.0f, 0.00001f) ? 0.00001f : ray.dir.y);
+	float t4 = (max.y - ray.origin.y) / (glm::epsilonEqual(ray.dir.y, 0.0f, 0.00001f) ? 0.00001f : ray.dir.y);
+	float t5 = (min.z - ray.origin.z) / (glm::epsilonEqual(ray.dir.z, 0.0f, 0.00001f) ? 0.00001f : ray.dir.z);
+	float t6 = (max.z - ray.origin.z) / (glm::epsilonEqual(ray.dir.z, 0.0f, 0.00001f) ? 0.00001f : ray.dir.z);
 
 	float tmin = std::max(std::max(std::min(t1, t2), std::min(t3, t4)), std::min(t5, t6));
 	float tmax = std::min(std::min(std::max(t1, t2), std::max(t3, t4)), std::max(t5, t6));
 
 	// if tmax < 0, ray is intersecting AABB
 	// but entire AABB is behing it's origin
-	if (tmax < 0) {
+	if (tmax < 0.0001) {
 		return Intersection();
 	}
 
@@ -76,7 +76,7 @@ Intersection AABB::intersect(const Ray& ray) const {
 	float t_result = tmin;
 
 	// If tmin is < 0, tmax is closer
-	if (tmin < 0.0f) {
+	if (tmin < 0.0001f) {
 		t_result = tmax;
 	}
 

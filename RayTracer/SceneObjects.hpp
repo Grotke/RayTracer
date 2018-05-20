@@ -8,7 +8,7 @@
 #include <string>
 
 struct Ray {
-	Ray(const glm::vec3& org, const glm::vec3& dir) : origin(org), dir(glm::normalize(dir)) {}
+	Ray(const glm::vec3& org, const glm::vec3& dir) : origin(org), dir(dir) {}
 	glm::vec3 dir;
 	glm::vec3 origin;
 };

@@ -18,34 +18,7 @@
 #include "Shape.h"
 
 #pragma comment(lib, "Shlwapi.lib")
-
-SceneMetaData createSceneMetaData(const std::string& sceneFilePath);
-inline bool modeIs(Mode mode);
-inline void removeFeature(Feature feature);
-inline void addFeature(Feature feature);
-inline bool featureIsActive(Feature requestedFeature);
-inline bool debugIsActive(Debug requestedDebug);
-std::string getEnabledFeaturesAsString();
-std::string getEnabledDebugAsString();
-float calculateDiffuseLighting(const glm::vec3& normal, const glm::vec3& objToLightDir);
-float calculateSpecularLighting(const Material& objMat, const glm::vec3& normal, const glm::vec3& halfAngle);
-float calculateAttenuation(const glm::vec3& attenuation, float distance);
-Color calculateLightingColor(const Scene& scene, const glm::vec3& intersectPoint, const glm::vec3& intersectNormal, const Material& objMat, const glm::vec3& viewPoint);
-Color computePixelColor(const Ray& ray, const Scene& scene, int currentDepth, Material baseObjMat = Material());
-void createPerformanceReport(const SceneMetaData& metaData, const std::string& outputFileName, const Scene& scene, const time_t& totalTimeInSeconds, int pixelsProcessed);
-void createRender(const SceneMetaData& sceneFileData, std::string outputFileName = "");
-void createAllDebugRendersForScene(const SceneMetaData& metaData);
-void createAllFeatureRendersForScene(const SceneMetaData& metaData);
-void createAllRendersForScene(const SceneMetaData& metaData);
-void createAllFeatureRendersForScene(const std::string& sceneFile);
-void createAllDebugRendersForScene(const std::string& sceneFile);
-void createAllRendersForScene(const std::string& sceneFile);
-
-SceneMetaData createSceneMetaData(const std::string& sceneFilePath) {
-	SceneMetaData metaData(sceneFilePath, PathFindFileName(sceneFilePath.c_str()));
-	return metaData;
-}
-
+float totalSpecularIntensity;
 enum class Debug {
 	//Debug flags aren't assigned numbers to make them easier to iterate through
 	DIFFUSE_LIGHT_INTENSITY,
@@ -70,10 +43,37 @@ enum class Mode {
 	BENCHMARK,
 	NONE
 };
-//
+
+SceneMetaData createSceneMetaData(const std::string& sceneFilePath);
+inline bool modeIs(Mode mode);
+inline void removeFeature(Feature feature);
+inline void addFeature(Feature feature);
+inline bool featureIsActive(Feature requestedFeature);
+inline bool debugIsActive(Debug requestedDebug);
+std::string getEnabledFeaturesAsString();
+std::string getEnabledDebugAsString();
+float calculateDiffuseLighting(const glm::vec3& normal, const glm::vec3& objToLightDir);
+float calculateSpecularLighting(const Material& objMat, const glm::vec3& normal, const glm::vec3& halfAngle);
+float calculateAttenuation(const glm::vec3& attenuation, float distance);
+Color calculateLightingColor(const Scene& scene, const glm::vec3& intersectPoint, const glm::vec3& intersectNormal, const Material& objMat, const glm::vec3& viewPoint);
+Color computePixelColor(const Ray& ray, const Scene& scene, int currentDepth, Material baseObjMat);
+void createPerformanceReport(const SceneMetaData& metaData, const std::string& outputFileName, const Scene& scene, const time_t& totalTimeInSeconds, int pixelsProcessed);
+void createRender(const SceneMetaData& sceneFileData, std::string outputFileName);
+void createAllDebugRendersForScene(const SceneMetaData& metaData);
+void createAllFeatureRendersForScene(const SceneMetaData& metaData);
+void createAllRendersForScene(const SceneMetaData& metaData);
+void createAllFeatureRendersForScene(const std::string& sceneFile);
+void createAllDebugRendersForScene(const std::string& sceneFile);
+void createAllRendersForScene(const std::string& sceneFile);
+
+SceneMetaData createSceneMetaData(const std::string& sceneFilePath) {
+	SceneMetaData metaData(sceneFilePath, PathFindFileName(sceneFilePath.c_str()));
+	return metaData;
+}
+
 std::unordered_map<Debug, std::string> debugNames({ { Debug::DIFFUSE_LIGHT_INTENSITY, "diffuse_intensity" },{ Debug::SPECULAR_LIGHT_INTENSITY, "specular_intensity" },{ Debug::NORMAL_MAP, "normals" },{ Debug::PRIMARY_INTERSECTION_MAP, "primary_intersect" },{ Debug::SHADOW_MAP, "shadow_intersect" },{Debug::LIGHT_DIRECTION_MAP, "light_direction_map"}, { Debug::NONE, "none" } });
 std::unordered_map<Feature, std::string> featureNames({ { Feature::DIFFUSE_LIGHTING, "diffuse" }, {Feature::SPECULAR_LIGHTING, "specular"}, {Feature::REFLECTIONS, "reflections"}, {Feature::SHADOWS, "shadows"},{ Feature::KEEP_TIME, "time" },{ Feature::REPORT_PERFORMANCE, "reporting" } });
-int featureFlags = (int)Feature::DIFFUSE_LIGHTING | (int)Feature::SHADOWS | (int)Feature::SPECULAR_LIGHTING | (int)Feature::KEEP_TIME | (int)Feature::REPORT_PERFORMANCE | (int) Feature::REFLECTIONS;
+int featureFlags = (int)Feature::DIFFUSE_LIGHTING | (int)Feature::SHADOWS | (int)Feature::SPECULAR_LIGHTING | (int)Feature::KEEP_TIME | (int)Feature::REPORT_PERFORMANCE | (int)Feature::REFLECTIONS;
 Debug debugFlag = Debug::NONE;
 Mode currentMode = Mode::BENCHMARK;
 //spheres, triangles, file reading, shadow calculations, reflection calculations, pixel color calculations
@@ -176,7 +176,7 @@ Color calculateLightingColor(const Scene& scene, const glm::vec3& intersectPoint
 			lightDir = glm::vec3(light.location);
 			atten = 1.0f;
 		}
-		Ray ray(intersectPoint, lightDir);
+		Ray ray(intersectPoint, glm::normalize(lightDir));
 		Intersection intersect = scene.findClosestIntersection(ray);
 		//Differentiate directional and point lights when calculating ray direction
 		//|| intersect.distAlongRay > glm::length(lightRayDir)
@@ -186,8 +186,9 @@ Color calculateLightingColor(const Scene& scene, const glm::vec3& intersectPoint
 			//ray.origin
 			glm::vec3 eyeDir = viewPoint - intersectPoint;
 			//glm::vec3 reflectDir = glm::normalize(lightDir + 2.0f*glm::dot(-lightDir, intersectNormal))*intersectNormal;
-			glm::vec3 halfAngle = normalize(lightDir + eyeDir);
+			glm::vec3 halfAngle = glm::normalize(glm::normalize(lightDir) + glm::normalize(eyeDir));
 			float specularLightIntensity = calculateSpecularLighting(objMat, intersectNormal, halfAngle);
+			totalSpecularIntensity += specularLightIntensity;
 			if (debugIsActive(Debug::DIFFUSE_LIGHT_INTENSITY)) {
 				colorFromLights += Color(diffuseLightIntensity, diffuseLightIntensity, diffuseLightIntensity);
 			}
@@ -232,12 +233,12 @@ Color computePixelColor(const Ray& ray, const Scene& scene, int currentDepth, Ma
 			}
 			else {
 				Color lightColor = calculateLightingColor(scene, Camera::createPointFromRay(ray, closestIntersect.distAlongRay), closestIntersect.intersectNormal, closestIntersect.mat, ray.origin);
-				Ray reflectRay(Camera::createPointFromRay(ray, closestIntersect.distAlongRay), ray.dir - 2.0f*glm::dot(ray.dir, closestIntersect.intersectNormal)*closestIntersect.intersectNormal);
+				Ray reflectRay(Camera::createPointFromRay(ray, closestIntersect.distAlongRay), glm::normalize(ray.dir - 2.0f*glm::dot(ray.dir, closestIntersect.intersectNormal)*closestIntersect.intersectNormal));
 				if (featureIsActive(Feature::REFLECTIONS)) {
 					if (currentDepth == 0) {
 						baseObjMat = closestIntersect.mat;
 					}
-					return lightColor + baseObjMat.specular*computePixelColor(reflectRay, scene, ++currentDepth, closestIntersect.mat);	
+					return lightColor + closestIntersect.mat.specular*computePixelColor(reflectRay, scene, ++currentDepth, closestIntersect.mat);	
 				}
 				else {
 					return lightColor;
@@ -398,7 +399,7 @@ void createAllRendersForScene(const std::string& sceneFile) {
 }
 
 int main(int argc, char* argv[]) {
-	SceneMetaData metaData = createSceneMetaData("final_scenes/scene4-specular.test");
+	SceneMetaData metaData = createSceneMetaData("test_scenes/scene3_light.test");
 	createRender(metaData);
 	//createAllRendersForScene(metaData);
 	std::cout << "Finished Rendering" << std::endl;

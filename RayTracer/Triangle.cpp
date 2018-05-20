@@ -147,7 +147,7 @@ Intersection Triangle::intersect(const Ray& ray) const {
 	glm::vec3 e2 = v1 - v3;
 	glm::vec3 e3 = v2 - v1;
 	glm::vec3 planeNormal = calculatePlaneNormal();
-	if (!glm::epsilonEqual(glm::dot(ray.dir, planeNormal), 0.0f, 0.00001f)) {
+	if (!glm::epsilonEqual(glm::dot(ray.dir, planeNormal), 0.0f, 0.0001f)) {
 		float d = glm::dot(v1, planeNormal);
 		float t = (d - glm::dot(ray.origin, planeNormal)) / glm::dot(ray.dir, planeNormal);
 		if (t < 0.0001f) {
@@ -169,6 +169,6 @@ Intersection Triangle::intersect(const Ray& ray) const {
 }
 
 glm::vec3 Triangle::calculatePlaneNormal() const {
-	return glm::cross(v2 - v1, v3 - v1);
+	return glm::normalize(glm::cross(v2 - v1, v3 - v1));
 	//return glm::cross(v3 - v2, v1 - v3);
 }
