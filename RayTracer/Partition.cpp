@@ -75,7 +75,7 @@ void Partition::insert(Shape*obj) {
 }
 
 void Partition::split(PartitionNode* nodeToSplit, int prevMatches) {
-	if (nodeToSplit != nullptr && nodeToSplit->isLeaf() && (std::static_cast<float>(prevMatches)/nodeToSplit->objects.size()) < splitThreshold) {
+	if (nodeToSplit != nullptr && nodeToSplit->isLeaf() && (static_cast<float>(prevMatches)/nodeToSplit->objects.size()) < splitThreshold) {
 		nodeToSplit->left = new PartitionNode(nodeToSplit->box.splitLeft(), nodeToSplit->objects.size());
 		nodeToSplit->right = new PartitionNode(nodeToSplit->box.splitRight(), nodeToSplit->objects.size());
 		int matches = 0;
