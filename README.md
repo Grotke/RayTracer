@@ -1,6 +1,6 @@
 # Raytracer
-![Cornell Box](http://www.josephcmontgomery.com/uploads/4/5/8/3/45834621/scene6_orig.png)
-![Stanford Dragon](http://www.josephcmontgomery.com/uploads/4/5/8/3/45834621/scene7_orig.png)
+![Cornell Box](http://www.josephcmontgomery.weebly.com/uploads/4/5/8/3/45834621/scene6_orig.png)
+![Stanford Dragon](http://www.josephcmontgomery.weebly.com/uploads/4/5/8/3/45834621/scene7_orig.png)
 ## Overview
 This is a 3D raytracer that produces static images from a file.
 
@@ -122,15 +122,15 @@ You can toggle features and debugging options. They're noted in main.cpp in the 
 ### Debug views
 Normal Map
 
-![Stanford Dragon Normal Map](http://www.josephcmontgomery.com/uploads/4/5/8/3/45834621/debug-normalsscene7-test_orig.png)
+![Stanford Dragon Normal Map](http://www.josephcmontgomery.weebly.com/uploads/4/5/8/3/45834621/debug-normalsscene7-test_orig.png)
 
 Specular Lighting Intensity Map
 
-![Stanford Dragon Specular Intensity Map](http://www.josephcmontgomery.com/uploads/4/5/8/3/45834621/debug-specular-intensityscene7-test_orig.png)
+![Stanford Dragon Specular Intensity Map](http://www.josephcmontgomery.weebly.com/uploads/4/5/8/3/45834621/debug-specular-intensityscene7-test_orig.png)
 
 Diffuse Lighting Intensity Map
 
-![Stanford Dragon Diffuse Intensity Map](http://www.josephcmontgomery.com/uploads/4/5/8/3/45834621/debug-diffuse-intensityscene7-test_orig.png)
+![Stanford Dragon Diffuse Intensity Map](http://www.josephcmontgomery.weebly.com/uploads/4/5/8/3/45834621/debug-diffuse-intensityscene7-test_orig.png)
 
 ### Performance Reporting
 Performance reporting is turned on by default. Every render creates a report in the reports/ directory with the name \[Output file name]_report.txt.
